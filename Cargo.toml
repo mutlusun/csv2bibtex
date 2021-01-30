@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 csv = "^1.1"
-serde = { version = "^1" }
+serde = "^1"
+biblatex = "^0.4"

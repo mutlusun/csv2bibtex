@@ -12,7 +12,7 @@ impl<'a> Parser<'a> {
             .delimiter(b',')
             .from_reader(data.as_bytes());
 
-        Parser { reader }
+        Self { reader }
     }
 }
 
