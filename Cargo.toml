@@ -1,0 +1,11 @@
+[package]
+name = "csv2bibtex"
+version = "0.1.0"
+authors = ["mutluler"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+csv = "^1.1"
+serde = { version = "^1" }
