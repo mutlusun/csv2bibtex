@@ -3,20 +3,23 @@ use regex;
 /// Convert Fields According to Command Line Arguments
 struct FieldConverter<'a> {
     map: std::collections::HashMap<&'a str, &'a str>,
+    map_postprocess: Option<std::collections::HashMap<&'a str, (String, String)>>,
+    // compile regex only once
+    regex: regex::Regex,
 }
 
 impl<'a> FieldConverter<'a> {
     pub fn new(
         replacement_list: Option<std::collections::HashMap<&'a str, &'a str>>,
         defaults: bool,
+        map_postprocess: Option<std::collections::HashMap<&'a str, (String, String)>>,
     ) -> Self {
         let mut map = std::collections::HashMap::new();
 
         // insert some defaults that may fit to the given column names in the csv file
         if defaults {
-            // map.insert("type", "entrytype");
-            // map.insert("key", "bibtexkey");
-            // map.insert("authors", "author");
+            map.insert("entrytype", "[[type]]");
+            map.insert("bibtexkey", "[[bibtexkey]]");
             map.insert("title", "[[titles]]");
             map.insert("author", "[[authors]]");
         }
@@ -26,7 +29,11 @@ impl<'a> FieldConverter<'a> {
             map.extend(x);
         }
 
-        Self { map }
+        Self {
+            map,
+            map_postprocess,
+            regex: regex::Regex::new("\\[\\[(.+?)\\]\\]").unwrap(),
+        }
     }
 
     pub fn convert_fields(
@@ -35,11 +42,10 @@ impl<'a> FieldConverter<'a> {
     ) -> std::collections::HashMap<&'a str, String> {
         let mut ret = std::collections::HashMap::new();
 
-        let re = regex::Regex::new("\\[\\[(.+?)\\]\\]").unwrap();
         for (k, v) in &self.map {
             // replace fields and save them in the `ret` map. This is the output of the current
             // function and will be printed later
-            let result = re.replace_all(v, |caps: &regex::Captures| {
+            let result = self.regex.replace_all(v, |caps: &regex::Captures| {
                 if let Some(x) = input.get(&caps[1]) {
                     x
                 } else {
@@ -54,6 +60,14 @@ impl<'a> FieldConverter<'a> {
 
         ret
     }
+
+    // pub fn postprocessing(&self, input: &mut std::collections::HashMap<&'a str, &'a str>) {
+    //     for (k, v) in &self.map_postprocess {
+    //         if let Some(x) = input.get_mut(&k) {
+    //             *x = &x.replace(v.0, v.1);
+    //         }
+    //     }
+    // }
 }
 
 #[cfg(test)]
@@ -70,7 +84,7 @@ mod tests {
         output.insert("author", String::from("author1, author2"));
         output.insert("title", String::from("My eloquent title"));
 
-        let converter = FieldConverter::new(None, true);
+        let converter = FieldConverter::new(None, true, None);
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);
@@ -90,7 +104,7 @@ mod tests {
         replacement_list.insert("pages", "[[Start Page]]");
         replacement_list.insert("isbn", "[[ISBNs]]");
 
-        let converter = FieldConverter::new(Some(replacement_list), true);
+        let converter = FieldConverter::new(Some(replacement_list), true, None);
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);
@@ -108,7 +122,7 @@ mod tests {
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert("pages", "[[Start Page]]--[[End Page]]");
 
-        let converter = FieldConverter::new(Some(replacement_list), true);
+        let converter = FieldConverter::new(Some(replacement_list), true, None);
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);
@@ -125,7 +139,7 @@ mod tests {
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert("pages", "[[Start Page]]--[[Start Page]]");
 
-        let converter = FieldConverter::new(Some(replacement_list), true);
+        let converter = FieldConverter::new(Some(replacement_list), true, None);
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);
