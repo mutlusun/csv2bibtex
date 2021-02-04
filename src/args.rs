@@ -1,12 +1,14 @@
-use anyhow;
+use anyhow::anyhow;
 use clap::{crate_authors, crate_description, crate_name, crate_version};
+use log;
 
 /// Main Config
 pub struct Config {
     csv_separator: char,
-    csv_field_mapping: String,
-    file_input: std::path::PathBuf,
-    file_output: std::path::PathBuf,
+    pub csv_field_mapping: std::collections::HashMap<String, String>,
+    pub file_input: std::path::PathBuf,
+    pub file_output: std::path::PathBuf,
+    pub log_level: log::LevelFilter,
 }
 
 impl Config {
@@ -47,21 +49,57 @@ impl Config {
                     .takes_value(true)
                     .value_name("SEPARATOR"),
             )
+            .arg(
+                clap::Arg::with_name("field-csv-to-bib")
+                    .help("Assignment of csv fields to bibtex fields")
+                    .long("field-csv-to-bib")
+                    .short("f")
+                    .takes_value(true)
+                    .multiple(true)
+                    .number_of_values(1)
+                    .value_name("FIELD"),
+            )
             .get_matches();
 
+        // input / output files
         let file_input = std::path::PathBuf::from(matches.value_of("input-file").unwrap());
         let file_output = std::path::PathBuf::from(matches.value_of("output-file").unwrap());
+
+        // handle field assignments
+        let mut csv_field_mapping = std::collections::HashMap::new();
+        if let Some(x) = matches.values_of("field-csv-to-bib") {
+            for field in x {
+                let result: Vec<&str> = field.split("=").collect();
+                csv_field_mapping.insert(String::from(result[0]), String::from(result[1]));
+            }
+        }
+
+        // csv options
         let csv_separator = if let Some(x) = matches.value_of("csv-separator") {
             x.chars().next().unwrap()
         } else {
             ','
         };
 
+        // logging handling
+        let log_level = if let Some(x) = matches.value_of("log-level") {
+            match x.to_lowercase().as_str() {
+                "debug" => log::LevelFilter::Debug,
+                "info" => log::LevelFilter::Info,
+                "warn" => log::LevelFilter::Warn,
+                "error" => log::LevelFilter::Error,
+                _ => return Err(anyhow!("Unknown log level given")),
+            }
+        } else {
+            log::LevelFilter::Info
+        };
+
         Ok(Self {
             file_input,
             file_output,
             csv_separator,
-            csv_field_mapping: String::from(""),
+            csv_field_mapping,
+            log_level,
         })
     }
 }

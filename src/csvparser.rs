@@ -1,22 +1,22 @@
 use csv;
 
 /// CSV Parser
-struct Parser<'a> {
-    reader: csv::Reader<&'a [u8]>,
+pub struct Parser<R> {
+    reader: csv::Reader<R>,
 }
 
-impl<'a> Parser<'a> {
-    pub fn new(data: &'a str) -> Self {
+impl<R: std::io::Read> Parser<R> {
+    pub fn new(data: R) -> Self {
         let reader = csv::ReaderBuilder::new()
             .has_headers(true)
             .delimiter(b',')
-            .from_reader(data.as_bytes());
+            .from_reader(data);
 
         Self { reader }
     }
 }
 
-impl<'a> Iterator for Parser<'a> {
+impl<R: std::io::Read> Iterator for Parser<R> {
     type Item = std::collections::HashMap<String, String>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -39,8 +39,8 @@ mod tests {
 
     #[test]
     fn test_csv_small() {
-        let data = "author,year,title\nalice,2000,my title";
-        let mut parser = Parser::new(&data);
+        let data = "author,year,title\nalice,2000,my title".as_bytes();
+        let mut parser = Parser::new(data);
         let result: std::collections::HashMap<String, String> = [
             (String::from("author"), String::from("alice")),
             (String::from("year"), String::from("2000")),

@@ -2,8 +2,22 @@ use biblatex;
 use std::str::FromStr;
 
 /// BibLaTex Writer
-struct Entry {
+#[derive(Debug)]
+pub struct Entry {
     item: biblatex::Entry,
+}
+
+impl AsRef<biblatex::Entry> for Entry {
+    fn as_ref(&self) -> &biblatex::Entry {
+        &self.item
+    }
+}
+
+impl std::ops::Deref for Entry {
+    type Target = biblatex::Entry;
+    fn deref(&self) -> &biblatex::Entry {
+        &self.item
+    }
 }
 
 impl Entry {

@@ -1,8 +1,8 @@
 use regex;
 
 /// Convert Fields According to Command Line Arguments
-struct FieldConverter<'a> {
-    map: std::collections::HashMap<&'a str, &'a str>,
+pub struct FieldConverter<'a> {
+    map: std::collections::HashMap<String, String>,
     map_postprocess: Option<std::collections::HashMap<&'a str, (String, String)>>,
     // compile regex only once
     regex: regex::Regex,
@@ -10,7 +10,7 @@ struct FieldConverter<'a> {
 
 impl<'a> FieldConverter<'a> {
     pub fn new(
-        replacement_list: Option<std::collections::HashMap<&'a str, &'a str>>,
+        replacement_list: Option<&std::collections::HashMap<String, String>>,
         defaults: bool,
         map_postprocess: Option<std::collections::HashMap<&'a str, (String, String)>>,
     ) -> Self {
@@ -18,15 +18,15 @@ impl<'a> FieldConverter<'a> {
 
         // insert some defaults that may fit to the given column names in the csv file
         if defaults {
-            map.insert("entrytype", "[[type]]");
-            map.insert("bibtexkey", "[[bibtexkey]]");
-            map.insert("title", "[[titles]]");
-            map.insert("author", "[[authors]]");
+            map.insert(String::from("entrytype"), String::from("[[type]]"));
+            map.insert(String::from("bibtexkey"), String::from("[[bibtexkey]]"));
+            map.insert(String::from("title"), String::from("[[titles]]"));
+            map.insert(String::from("author"), String::from("[[authors]]"));
         }
 
         // insert given hashmap into default hashmap
         if let Some(x) = replacement_list {
-            map.extend(x);
+            map.extend(x.clone());
         }
 
         Self {
@@ -38,8 +38,8 @@ impl<'a> FieldConverter<'a> {
 
     pub fn convert_fields(
         &self,
-        input: std::collections::HashMap<&'a str, &'a str>,
-    ) -> std::collections::HashMap<&'a str, String> {
+        input: std::collections::HashMap<String, String>,
+    ) -> std::collections::HashMap<String, String> {
         let mut ret = std::collections::HashMap::new();
 
         for (k, v) in &self.map {
@@ -54,7 +54,7 @@ impl<'a> FieldConverter<'a> {
             });
 
             if result != "" {
-                ret.insert(*k, result.into_owned());
+                ret.insert(String::from(k), result.into_owned());
             }
         }
 
@@ -77,12 +77,12 @@ mod tests {
     #[test]
     fn test_convert_default_fields() {
         let mut input = std::collections::HashMap::new();
-        input.insert("authors", "author1, author2");
-        input.insert("titles", "My eloquent title");
+        input.insert(String::from("authors"), String::from("author1, author2"));
+        input.insert(String::from("titles"), String::from("My eloquent title"));
 
         let mut output = std::collections::HashMap::new();
-        output.insert("author", String::from("author1, author2"));
-        output.insert("title", String::from("My eloquent title"));
+        output.insert(String::from("author"), String::from("author1, author2"));
+        output.insert(String::from("title"), String::from("My eloquent title"));
 
         let converter = FieldConverter::new(None, true, None);
         let ret = converter.convert_fields(input);
@@ -93,18 +93,18 @@ mod tests {
     #[test]
     fn test_own_replacement_list() {
         let mut input = std::collections::HashMap::new();
-        input.insert("Start Page", "1200");
-        input.insert("ISBNs", "XXXXX-XXXXX");
+        input.insert(String::from("Start Page"), String::from("1200"));
+        input.insert(String::from("ISBNs"), String::from("XXXXX-XXXXX"));
 
         let mut output = std::collections::HashMap::new();
-        output.insert("pages", String::from("1200"));
-        output.insert("isbn", String::from("XXXXX-XXXXX"));
+        output.insert(String::from("pages"), String::from("1200"));
+        output.insert(String::from("isbn"), String::from("XXXXX-XXXXX"));
 
         let mut replacement_list = std::collections::HashMap::new();
-        replacement_list.insert("pages", "[[Start Page]]");
-        replacement_list.insert("isbn", "[[ISBNs]]");
+        replacement_list.insert(String::from("pages"), String::from("[[Start Page]]"));
+        replacement_list.insert(String::from("isbn"), String::from("[[ISBNs]]"));
 
-        let converter = FieldConverter::new(Some(replacement_list), true, None);
+        let converter = FieldConverter::new(Some(&replacement_list), true, None);
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);
@@ -113,16 +113,19 @@ mod tests {
     #[test]
     fn test_combined_fields() {
         let mut input = std::collections::HashMap::new();
-        input.insert("Start Page", "1200");
-        input.insert("End Page", "1212");
+        input.insert(String::from("Start Page"), String::from("1200"));
+        input.insert(String::from("End Page"), String::from("1212"));
 
         let mut output = std::collections::HashMap::new();
-        output.insert("pages", String::from("1200--1212"));
+        output.insert(String::from("pages"), String::from("1200--1212"));
 
         let mut replacement_list = std::collections::HashMap::new();
-        replacement_list.insert("pages", "[[Start Page]]--[[End Page]]");
+        replacement_list.insert(
+            String::from("pages"),
+            String::from("[[Start Page]]--[[End Page]]"),
+        );
 
-        let converter = FieldConverter::new(Some(replacement_list), true, None);
+        let converter = FieldConverter::new(Some(&replacement_list), true, None);
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);
@@ -131,15 +134,18 @@ mod tests {
     #[test]
     fn test_combined_fields_same_field_multiple_times() {
         let mut input = std::collections::HashMap::new();
-        input.insert("Start Page", "1200");
+        input.insert(String::from("Start Page"), String::from("1200"));
 
         let mut output = std::collections::HashMap::new();
-        output.insert("pages", String::from("1200--1200"));
+        output.insert(String::from("pages"), String::from("1200--1200"));
 
         let mut replacement_list = std::collections::HashMap::new();
-        replacement_list.insert("pages", "[[Start Page]]--[[Start Page]]");
+        replacement_list.insert(
+            String::from("pages"),
+            String::from("[[Start Page]]--[[Start Page]]"),
+        );
 
-        let converter = FieldConverter::new(Some(replacement_list), true, None);
+        let converter = FieldConverter::new(Some(&replacement_list), true, None);
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);
