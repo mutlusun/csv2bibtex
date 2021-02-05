@@ -1,6 +1,5 @@
 use anyhow::anyhow;
 use clap::{crate_authors, crate_description, crate_name, crate_version};
-use log;
 
 /// Main Config
 pub struct Config {
@@ -69,7 +68,7 @@ impl Config {
         let mut csv_field_mapping = std::collections::HashMap::new();
         if let Some(x) = matches.values_of("field-csv-to-bib") {
             for field in x {
-                let result: Vec<&str> = field.split("=").collect();
+                let result: Vec<&str> = field.split('=').collect();
                 csv_field_mapping.insert(String::from(result[0]), String::from(result[1]));
             }
         }

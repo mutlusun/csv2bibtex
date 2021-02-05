@@ -1,14 +1,13 @@
-mod args;
-mod converter;
-mod csvparser;
-mod entry;
-
 use anyhow::Context;
-use log::{error, info};
-use simplelog;
+use log::info;
 use std::io::Write;
 
-fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
+pub mod args;
+pub mod converter;
+pub mod csvparser;
+pub mod entry;
+
+pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     // open file for reading and writing
     let file_input = std::fs::File::open(&config.file_input)
         .with_context(|| format!("Could not open csv file: {}", &config.file_input.display()))?;
@@ -38,26 +37,4 @@ fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     }
 
     Ok(())
-}
-
-fn main() {
-    // build config structure
-    let mut config = args::Config::new().unwrap_or_else(|e| {
-        eprintln!("Problem parsing arguments: {}.", e);
-        std::process::exit(1);
-    });
-
-    // initialize logger
-    simplelog::TermLogger::init(
-        config.log_level,
-        simplelog::Config::default(),
-        simplelog::TerminalMode::Mixed,
-    )
-    .unwrap();
-
-    // run main function
-    if let Err(e) = run(&mut config) {
-        error!("{:#}.", e);
-        std::process::exit(1);
-    }
 }

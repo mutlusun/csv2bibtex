@@ -1,4 +1,3 @@
-use csv;
 use log::{debug, error, info};
 
 /// CSV Parser

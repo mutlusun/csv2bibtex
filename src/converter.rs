@@ -1,6 +1,3 @@
-use log::debug;
-use regex;
-
 /// Convert Fields According to Command Line Arguments
 pub struct FieldConverter<'a> {
     map: &'a mut std::collections::HashMap<String, String>,
@@ -25,16 +22,16 @@ impl<'a> FieldConverter<'a> {
         // insert some defaults that may fit to the given column names in the csv file
         self.map
             .entry(String::from("entrytype"))
-            .or_insert(String::from("[[type]]"));
+            .or_insert_with(|| String::from("[[type]]"));
         self.map
             .entry(String::from("bibtexkey"))
-            .or_insert(String::from("[[bibtexkey]]"));
+            .or_insert_with(|| String::from("[[bibtexkey]]"));
         self.map
             .entry(String::from("title"))
-            .or_insert(String::from("[[titles]]"));
+            .or_insert_with(|| String::from("[[titles]]"));
         self.map
             .entry(String::from("author"))
-            .or_insert(String::from("[[authors]]"));
+            .or_insert_with(|| String::from("[[authors]]"));
 
         self
     }

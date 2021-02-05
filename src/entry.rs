@@ -1,4 +1,3 @@
-use biblatex;
 use std::str::FromStr;
 
 /// BibLaTex Writer
@@ -17,6 +16,12 @@ impl std::ops::Deref for Entry {
     type Target = biblatex::Entry;
     fn deref(&self) -> &biblatex::Entry {
         &self.item
+    }
+}
+
+impl Default for Entry {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
