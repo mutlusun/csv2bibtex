@@ -4,7 +4,7 @@ mod csvparser;
 mod entry;
 
 use anyhow::Context;
-use log::error;
+use log::{debug, error, info};
 use simplelog;
 use std::io::Write;
 
@@ -18,17 +18,23 @@ fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
             &config.file_output.display()
         )
     })?;
+    info!(
+        "Created file {} to write output.",
+        &config.file_output.display()
+    );
     let mut buf_output = std::io::BufWriter::new(file_output);
 
     // create new csvparser, converter
     let csvparser = csvparser::Parser::new(&file_input);
-    let converter = converter::FieldConverter::new(&mut config.csv_field_mapping, None);
+    let converter =
+        converter::FieldConverter::new(&mut config.csv_field_mapping, None).add_defaults();
 
     for entry in csvparser {
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        println!("{:?}", entry);
-        buf_output.write_fmt(format_args!("{}\n\n", entry.to_biblatex_string()));
+        buf_output
+            .write_fmt(format_args!("{}\n\n", entry.to_biblatex_string()))
+            .context("Could not write entry to output file.")?;
     }
 
     Ok(())

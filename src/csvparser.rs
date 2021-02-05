@@ -1,4 +1,5 @@
 use csv;
+use log::debug;
 
 /// CSV Parser
 pub struct Parser<R> {
@@ -26,6 +27,7 @@ impl<R: std::io::Read> Iterator for Parser<R> {
         match result {
             Some(x) => {
                 let record: Option<Self::Item> = x.ok();
+                debug!("Read csv line: {}", &self.reader.position().line());
                 record
             }
             None => None,

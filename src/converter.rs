@@ -1,3 +1,4 @@
+use log::debug;
 use regex;
 
 /// Convert Fields According to Command Line Arguments
@@ -50,6 +51,10 @@ impl<'a> FieldConverter<'a> {
             // function and will be printed later
             let result = self.regex.replace_all(v, |caps: &regex::Captures| {
                 if let Some(x) = input.get(&caps[1]) {
+                    debug!(
+                        "converter: Input column {} assigned to bibtex field {}.",
+                        x, k
+                    );
                     x
                 } else {
                     ""
