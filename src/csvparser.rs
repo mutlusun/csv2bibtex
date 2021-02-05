@@ -1,5 +1,5 @@
 use csv;
-use log::debug;
+use log::{debug, error, info};
 
 /// CSV Parser
 pub struct Parser<R> {
@@ -8,10 +8,18 @@ pub struct Parser<R> {
 
 impl<R: std::io::Read> Parser<R> {
     pub fn new(data: R, delimiter: &str) -> Self {
+        // TODO there has to be a better way
+        let delimiter = if delimiter == "\\t" { "\t" } else { delimiter };
+
         let mut reader = csv::ReaderBuilder::new()
             .has_headers(true)
             .delimiter(delimiter.as_bytes()[0])
+            .flexible(true)
             .from_reader(data);
+
+        info!("CSV file has {} columns.", reader.headers().unwrap().len());
+        // TODO pretty printing
+        info!("CSV columns: {:#?}.", reader.headers().unwrap());
 
         Self {
             iterator: reader.into_deserialize(),
@@ -27,13 +35,19 @@ impl<R: std::io::Read> Iterator for Parser<R> {
 
         match result {
             Some(x) => {
-                let record: Option<Self::Item> = x.ok();
                 debug!(
-                    "Read csv line: {}",
+                    "Read CSV file, line: {}",
                     // I'm not sure why there is an offset of one here.
                     &self.iterator.reader().position().line() - 1
                 );
-                record
+                match x {
+                    Ok(x) => Some(x),
+                    Err(e) => {
+                        // TODO recover from errors
+                        error!("{}", e);
+                        None
+                    }
+                }
             }
             None => None,
         }
