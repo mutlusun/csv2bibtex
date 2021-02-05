@@ -25,7 +25,7 @@ fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     let mut buf_output = std::io::BufWriter::new(file_output);
 
     // create new csvparser, converter
-    let csvparser = csvparser::Parser::new(&file_input);
+    let csvparser = csvparser::Parser::new(&file_input, &config.csv_delimiter);
     let converter =
         converter::FieldConverter::new(&mut config.csv_field_mapping, None).add_defaults();
 

@@ -7,10 +7,10 @@ pub struct Parser<R> {
 }
 
 impl<R: std::io::Read> Parser<R> {
-    pub fn new(data: R) -> Self {
+    pub fn new(data: R, delimiter: &str) -> Self {
         let mut reader = csv::ReaderBuilder::new()
             .has_headers(true)
-            .delimiter(b',')
+            .delimiter(delimiter.as_bytes()[0])
             .from_reader(data);
 
         Self {
@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn test_csv_small() {
         let data = "author,year,title\nalice,2000,my title".as_bytes();
-        let mut parser = Parser::new(data);
+        let mut parser = Parser::new(data, ",");
         let result: std::collections::HashMap<String, String> = [
             (String::from("author"), String::from("alice")),
             (String::from("year"), String::from("2000")),

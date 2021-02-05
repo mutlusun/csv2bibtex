@@ -4,7 +4,7 @@ use log;
 
 /// Main Config
 pub struct Config {
-    csv_separator: char,
+    pub csv_delimiter: String,
     pub csv_field_mapping: std::collections::HashMap<String, String>,
     pub file_input: std::path::PathBuf,
     pub file_output: std::path::PathBuf,
@@ -42,12 +42,12 @@ impl Config {
                     .value_name("LEVEL"),
             )
             .arg(
-                clap::Arg::with_name("csv-separator")
-                    .help("Separator between cells in CSV file")
-                    .long("csv-separator")
+                clap::Arg::with_name("csv-delimiter")
+                    .help("Delimiter between cells in CSV file")
+                    .long("csv-delimiter")
                     .short("c")
                     .takes_value(true)
-                    .value_name("SEPARATOR"),
+                    .value_name("DELIMITER"),
             )
             .arg(
                 clap::Arg::with_name("field-csv-to-bib")
@@ -75,10 +75,10 @@ impl Config {
         }
 
         // csv options
-        let csv_separator = if let Some(x) = matches.value_of("csv-separator") {
-            x.chars().next().unwrap()
+        let csv_delimiter = if let Some(x) = matches.value_of("csv-delimiter") {
+            String::from(x)
         } else {
-            ','
+            String::from(",")
         };
 
         // logging handling
@@ -97,7 +97,7 @@ impl Config {
         Ok(Self {
             file_input,
             file_output,
-            csv_separator,
+            csv_delimiter,
             csv_field_mapping,
             log_level,
         })
