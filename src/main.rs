@@ -8,7 +8,7 @@ use log::error;
 use simplelog;
 use std::io::Write;
 
-fn run(config: &args::Config) -> Result<(), anyhow::Error> {
+fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     // open file for reading and writing
     let file_input = std::fs::File::open(&config.file_input)
         .with_context(|| format!("Could not open csv file: {}", &config.file_input.display()))?;
@@ -22,7 +22,7 @@ fn run(config: &args::Config) -> Result<(), anyhow::Error> {
 
     // create new csvparser, converter
     let csvparser = csvparser::Parser::new(&file_input);
-    let converter = converter::FieldConverter::new(Some(&config.csv_field_mapping), true, None);
+    let converter = converter::FieldConverter::new(&mut config.csv_field_mapping, None);
 
     for entry in csvparser {
         let entry = converter.convert_fields(entry);
@@ -36,7 +36,7 @@ fn run(config: &args::Config) -> Result<(), anyhow::Error> {
 
 fn main() {
     // build config structure
-    let config = args::Config::new().unwrap_or_else(|e| {
+    let mut config = args::Config::new().unwrap_or_else(|e| {
         eprintln!("Problem parsing arguments: {}.", e);
         std::process::exit(1);
     });
@@ -50,7 +50,7 @@ fn main() {
     .unwrap();
 
     // run main function
-    if let Err(e) = run(&config) {
+    if let Err(e) = run(&mut config) {
         error!("{:#}.", e);
         std::process::exit(1);
     }
