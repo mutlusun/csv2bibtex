@@ -3,17 +3,19 @@ use log::debug;
 
 /// CSV Parser
 pub struct Parser<R> {
-    reader: csv::Reader<R>,
+    iterator: csv::DeserializeRecordsIntoIter<R, std::collections::HashMap<String, String>>,
 }
 
 impl<R: std::io::Read> Parser<R> {
     pub fn new(data: R) -> Self {
-        let reader = csv::ReaderBuilder::new()
+        let mut reader = csv::ReaderBuilder::new()
             .has_headers(true)
             .delimiter(b',')
             .from_reader(data);
 
-        Self { reader }
+        Self {
+            iterator: reader.into_deserialize(),
+        }
     }
 }
 
@@ -21,13 +23,16 @@ impl<R: std::io::Read> Iterator for Parser<R> {
     type Item = std::collections::HashMap<String, String>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut result = self.reader.deserialize();
-        let result = result.next();
+        let result = self.iterator.next();
 
         match result {
             Some(x) => {
                 let record: Option<Self::Item> = x.ok();
-                debug!("Read csv line: {}", &self.reader.position().line());
+                debug!(
+                    "Read csv line: {}",
+                    // I'm not sure why there is an offset of one here.
+                    &self.iterator.reader().position().line() - 1
+                );
                 record
             }
             None => None,

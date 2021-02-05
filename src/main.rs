@@ -4,7 +4,7 @@ mod csvparser;
 mod entry;
 
 use anyhow::Context;
-use log::{debug, error, info};
+use log::{error, info};
 use simplelog;
 use std::io::Write;
 
@@ -19,7 +19,7 @@ fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
         )
     })?;
     info!(
-        "Created file {} to write output.",
+        "Created file \"{}\" to write output.",
         &config.file_output.display()
     );
     let mut buf_output = std::io::BufWriter::new(file_output);
