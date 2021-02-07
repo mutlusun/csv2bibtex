@@ -28,6 +28,7 @@ pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     let converter =
         converter::FieldConverter::new(&mut config.csv_field_mapping, None).add_defaults();
 
+    // main loop
     for entry in csvparser {
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
@@ -36,5 +37,6 @@ pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
             .context("Could not write entry to output file.")?;
     }
 
+    // the end
     Ok(())
 }
