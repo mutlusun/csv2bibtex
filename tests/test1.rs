@@ -3,20 +3,8 @@ mod test_input1 {
     use csv2bibtex::args;
     use log::error;
 
-    fn init() {
-        // initialize logger
-        let _ = simplelog::TermLogger::init(
-            log::LevelFilter::Error,
-            simplelog::Config::default(),
-            simplelog::TerminalMode::Mixed,
-        )
-        .unwrap();
-    }
-
     #[test]
     fn only_with_defaults() {
-        init();
-
         // build config structure
         let mut config = args::Config {
             csv_delimiter: String::from(","),
