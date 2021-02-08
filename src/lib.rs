@@ -1,10 +1,10 @@
 use anyhow::Context;
 use log::info;
-use std::io::Write;
 
 pub mod args;
+pub mod bibwriter;
 pub mod converter;
-pub mod csvparser;
+pub mod csvreader;
 pub mod entry;
 
 pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
@@ -21,21 +21,27 @@ pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
         "Created file \"{}\" to write output.",
         &config.file_output.display()
     );
-    let mut buf_output = std::io::BufWriter::new(file_output);
+    let buf_output = std::io::BufWriter::new(file_output);
 
-    // create new csvparser, converter
-    let csvparser = csvparser::Parser::new(&file_input, &config.csv_delimiter);
+    // create new csvparser, converter, and writer
+    let csvparser = csvreader::Reader::new(&file_input, &config.csv_delimiter);
     let converter =
         converter::FieldConverter::new(&mut config.csv_field_mapping, None).add_defaults();
+    let mut writer = bibwriter::Writer::new(buf_output);
 
     // main loop
+    let start = std::time::Instant::now();
+
     for entry in csvparser {
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        buf_output
-            .write_fmt(format_args!("{}\n\n", entry.to_biblatex_string()))
-            .context("Could not write entry to output file.")?;
+        writer.write(&entry.to_biblatex_string())?;
     }
+    info!(
+        "Wrote {} entries in {:?}.",
+        writer.get_num_written_entries(),
+        start.elapsed()
+    );
 
     // the end
     Ok(())

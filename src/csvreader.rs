@@ -1,11 +1,11 @@
 use log::{debug, error, info};
 
 /// CSV Parser
-pub struct Parser<R> {
+pub struct Reader<R> {
     iterator: csv::DeserializeRecordsIntoIter<R, std::collections::HashMap<String, String>>,
 }
 
-impl<R: std::io::Read> Parser<R> {
+impl<R: std::io::Read> Reader<R> {
     pub fn new(data: R, delimiter: &str) -> Self {
         // TODO there has to be a better way
         let delimiter = if delimiter == "\\t" { "\t" } else { delimiter };
@@ -26,7 +26,7 @@ impl<R: std::io::Read> Parser<R> {
     }
 }
 
-impl<R: std::io::Read> Iterator for Parser<R> {
+impl<R: std::io::Read> Iterator for Reader<R> {
     type Item = std::collections::HashMap<String, String>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -60,7 +60,7 @@ mod tests {
     #[test]
     fn test_csv_small() {
         let data = "author,year,title\nalice,2000,my title".as_bytes();
-        let mut parser = Parser::new(data, ",");
+        let mut parser = Reader::new(data, ",");
         let result: std::collections::HashMap<String, String> = [
             (String::from("author"), String::from("alice")),
             (String::from("year"), String::from("2000")),

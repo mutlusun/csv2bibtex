@@ -1,7 +1,7 @@
 /// Convert Fields According to Command Line Arguments
 pub struct FieldConverter<'a> {
     map: &'a mut std::collections::HashMap<String, String>,
-    map_postprocess: Option<std::collections::HashMap<&'a str, (String, String)>>,
+    //map_postprocess: Option<std::collections::HashMap<&'a str, (String, String)>>,
     // compile regex only once
     regex: regex::Regex,
 }
@@ -13,7 +13,7 @@ impl<'a> FieldConverter<'a> {
     ) -> Self {
         Self {
             map: replacement_list,
-            map_postprocess,
+            //map_postprocess,
             regex: regex::Regex::new("\\[\\[(.+?)\\]\\]").unwrap(),
         }
     }
