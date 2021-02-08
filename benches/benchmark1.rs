@@ -1,29 +1,29 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use csv2bibtex::bibwriter;
 use csv2bibtex::converter;
-use csv2bibtex::csvparser;
+use csv2bibtex::csvreader;
 use csv2bibtex::entry;
 
-fn bench_with_zero_fields(input: &str) -> Vec<String> {
+fn bench_with_zero_fields(input: &str) {
     // create hasmap
     let mut csv_field_mapping = std::collections::HashMap::new();
 
-    // create new csvparser, converter
-    let csvparser = csvparser::Parser::new(input.as_bytes(), ",");
+    // create new csvparser, converter, and writer
+    let output = std::vec::Vec::new();
+    let csvparser = csvreader::Reader::new(input.as_bytes(), ",");
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
+    let mut writer = bibwriter::Writer::new(output);
 
     // main loop
-    let mut ret: Vec<String> = vec![String::from(""); 0];
     for entry in csvparser {
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        ret.push(entry.to_biblatex_string());
+        writer.write(&entry.to_biblatex_string()).unwrap();
     }
-
-    ret
 }
 
 // five fields that occure in the file / input
-fn bench_with_five_valid_fields(input: &str) -> Vec<String> {
+fn bench_with_five_valid_fields(input: &str) {
     // build field hash map
     let mut csv_field_mapping = std::collections::HashMap::new();
     csv_field_mapping.insert(String::from("title"), String::from("[[Document Title]]"));
@@ -35,23 +35,22 @@ fn bench_with_five_valid_fields(input: &str) -> Vec<String> {
     csv_field_mapping.insert(String::from("year"), String::from("[[Publication Year]]"));
     csv_field_mapping.insert(String::from("volume"), String::from("[[Volume]]"));
 
-    // create new csvparser, converter
-    let csvparser = csvparser::Parser::new(input.as_bytes(), ",");
-    let converter = converter::FieldConverter::new(&mut csv_field_mapping, None).add_defaults();
+    // create new csvparser, converter, and writer
+    let output = std::vec::Vec::new();
+    let csvparser = csvreader::Reader::new(input.as_bytes(), ",");
+    let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
+    let mut writer = bibwriter::Writer::new(output);
 
     // main loop
-    let mut ret: Vec<String> = vec![String::from(""); 0];
     for entry in csvparser {
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        ret.push(entry.to_biblatex_string());
+        writer.write(&entry.to_biblatex_string()).unwrap();
     }
-
-    ret
 }
 
 // five fields that do not occure in the file / input
-fn bench_with_five_invalid_fields(input: &str) -> Vec<String> {
+fn bench_with_five_invalid_fields(input: &str) {
     // build field hash map
     let mut csv_field_mapping = std::collections::HashMap::new();
     csv_field_mapping.insert(String::from("title"), String::from("[[TITLE]]"));
@@ -60,23 +59,22 @@ fn bench_with_five_invalid_fields(input: &str) -> Vec<String> {
     csv_field_mapping.insert(String::from("year"), String::from("[[YEAR]]"));
     csv_field_mapping.insert(String::from("volume"), String::from("[[vOLUME]]"));
 
-    // create new csvparser, converter
-    let csvparser = csvparser::Parser::new(input.as_bytes(), ",");
-    let converter = converter::FieldConverter::new(&mut csv_field_mapping, None).add_defaults();
+    // create new csvparser, converter, and writer
+    let output = std::vec::Vec::new();
+    let csvparser = csvreader::Reader::new(input.as_bytes(), ",");
+    let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
+    let mut writer = bibwriter::Writer::new(output);
 
     // main loop
-    let mut ret: Vec<String> = vec![String::from(""); 0];
     for entry in csvparser {
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        ret.push(entry.to_biblatex_string());
+        writer.write(&entry.to_biblatex_string()).unwrap();
     }
-
-    ret
 }
 
 // ten fields that occure in the file / input
-fn bench_with_ten_valid_fields(input: &str) -> Vec<String> {
+fn bench_with_ten_valid_fields(input: &str) {
     // build field hash map
     let mut csv_field_mapping = std::collections::HashMap::new();
     csv_field_mapping.insert(String::from("title"), String::from("[[Document Title]]"));
@@ -96,23 +94,22 @@ fn bench_with_ten_valid_fields(input: &str) -> Vec<String> {
     csv_field_mapping.insert(String::from("issn"), String::from("[[ISSN]]"));
     csv_field_mapping.insert(String::from("isbn"), String::from("[[ISBNs]]"));
 
-    // create new csvparser, converter
-    let csvparser = csvparser::Parser::new(input.as_bytes(), ",");
-    let converter = converter::FieldConverter::new(&mut csv_field_mapping, None).add_defaults();
+    // create new csvparser, converter, and writer
+    let output = std::vec::Vec::new();
+    let csvparser = csvreader::Reader::new(input.as_bytes(), ",");
+    let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
+    let mut writer = bibwriter::Writer::new(output);
 
     // main loop
-    let mut ret: Vec<String> = vec![String::from(""); 0];
     for entry in csvparser {
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        ret.push(entry.to_biblatex_string());
+        writer.write(&entry.to_biblatex_string()).unwrap();
     }
-
-    ret
 }
 
 // ten fields that do not occure in the file / input
-fn bench_with_ten_invalid_fields(input: &str) -> Vec<String> {
+fn bench_with_ten_invalid_fields(input: &str) {
     // build field hash map
     let mut csv_field_mapping = std::collections::HashMap::new();
     csv_field_mapping.insert(String::from("title"), String::from("[[TITLE]]"));
@@ -126,19 +123,18 @@ fn bench_with_ten_invalid_fields(input: &str) -> Vec<String> {
     csv_field_mapping.insert(String::from("issn"), String::from("[[ISSNaa]]"));
     csv_field_mapping.insert(String::from("isbn"), String::from("[[ISBNSaa]]"));
 
-    // create new csvparser, converter
-    let csvparser = csvparser::Parser::new(input.as_bytes(), ",");
-    let converter = converter::FieldConverter::new(&mut csv_field_mapping, None).add_defaults();
+    // create new csvparser, converter, and writer
+    let output = std::vec::Vec::new();
+    let csvparser = csvreader::Reader::new(input.as_bytes(), ",");
+    let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
+    let mut writer = bibwriter::Writer::new(output);
 
     // main loop
-    let mut ret: Vec<String> = vec![String::from(""); 0];
     for entry in csvparser {
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        ret.push(entry.to_biblatex_string());
+        writer.write(&entry.to_biblatex_string()).unwrap();
     }
-
-    ret
 }
 
 fn criterion_benchmark(c: &mut Criterion) {

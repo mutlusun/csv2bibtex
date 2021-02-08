@@ -12,9 +12,7 @@ impl<W: std::io::Write> Writer<W> {
     }
 
     pub fn write(&mut self, data: &str) -> Result<(), anyhow::Error> {
-        self.writer
-            .write_fmt(format_args!("{}\n\n", data))
-            .context("Could not write entry to file.")?;
+        write!(self.writer, "{}\n\n", data).context("Could not write entry to file.")?;
 
         self.counter += 1;
 
