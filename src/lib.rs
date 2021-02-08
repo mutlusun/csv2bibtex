@@ -24,7 +24,7 @@ pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     let buf_output = std::io::BufWriter::new(file_output);
 
     // create new csvparser, converter, and writer
-    let csvparser = csvreader::Reader::new(&file_input, &config.csv_delimiter);
+    let reader = csvreader::Reader::new(&file_input, &config.csv_delimiter);
     let converter =
         converter::FieldConverter::new(&mut config.csv_field_mapping, None).add_defaults();
     let mut writer = bibwriter::Writer::new(buf_output);
@@ -32,7 +32,7 @@ pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     // main loop
     let start = std::time::Instant::now();
 
-    for entry in csvparser {
+    for entry in reader {
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
         writer.write(&entry.to_biblatex_string())?;
