@@ -47,6 +47,8 @@ impl<'a> FieldConverter<'a> {
         // 1. remove keys/entries that are non-existent in csv files
         // 2. for every entry/row in csv file, the same happens. Probably we can preprocess all
         //    replacements ... Maybe we can even process one column at a time?
+        // 3. Maybe it's best to iterate over the fields in the init function and collect only the
+        //    captures. Then we can iterate over the captures here.
         for (k, v) in self.map.iter() {
             // replace fields and save them in the `ret` map. This is the output of the current
             // function and will be printed later

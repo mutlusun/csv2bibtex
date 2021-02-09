@@ -1,6 +1,18 @@
 use anyhow::anyhow;
 use clap::{crate_authors, crate_description, crate_name, crate_version};
 
+/// Output Type (BibTex vs. BibLaTeX)
+pub enum OutputType {
+    Bibtex,
+    Biblatex,
+}
+
+impl Default for OutputType {
+    fn default() -> Self {
+        Self::Biblatex
+    }
+}
+
 /// Main Config
 pub struct Config {
     pub csv_delimiter: String,
@@ -8,6 +20,7 @@ pub struct Config {
     pub file_input: std::path::PathBuf,
     pub file_output: std::path::PathBuf,
     pub log_level: log::LevelFilter,
+    pub output_type: OutputType,
 }
 
 impl Config {
@@ -48,10 +61,28 @@ impl Config {
                     .takes_value(true)
                     .value_name("DELIMITER"),
             )
+            .group(
+                clap::ArgGroup::with_name("output-type")
+                    .args(&["bibtex", "biblatex"])
+                    .multiple(false)
+                    .required(false),
+            )
+            .arg(
+                clap::Arg::with_name("bibtex")
+                    .help("Print output in BibTeX mode")
+                    .long("bibtex")
+                    .takes_value(false),
+            )
+            .arg(
+                clap::Arg::with_name("biblatex")
+                    .help("Print output in BibLaTeX mode")
+                    .long("biblatex")
+                    .takes_value(false),
+            )
             .arg(
                 clap::Arg::with_name("field-csv-to-bib")
                     .help("Assignment of csv fields to bibtex fields")
-                    .long("field-csv-to-bib")
+                    .long("field-mapping")
                     .short("f")
                     .takes_value(true)
                     .multiple(true)
@@ -93,12 +124,22 @@ impl Config {
             log::LevelFilter::Info
         };
 
+        // output type
+        let output_type = if matches.is_present("bibtex") {
+            OutputType::Bibtex
+        } else if matches.is_present("biblatex") {
+            OutputType::Biblatex
+        } else {
+            OutputType::default()
+        };
+
         Ok(Self {
             file_input,
             file_output,
             csv_delimiter,
             csv_field_mapping,
             log_level,
+            output_type,
         })
     }
 }

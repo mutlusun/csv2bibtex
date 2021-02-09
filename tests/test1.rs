@@ -12,6 +12,7 @@ mod test_input1 {
             file_input: std::path::PathBuf::from("./tests/test1-input1.csv"),
             file_output: std::path::PathBuf::from("./tests/tmp-test1-output1.bib"),
             log_level: log::LevelFilter::Error,
+            output_type: args::OutputType::Biblatex,
         };
 
         // run main function
@@ -68,6 +69,7 @@ mod test_input1 {
             file_input: std::path::PathBuf::from("./tests/test1-input1.csv"),
             file_output: std::path::PathBuf::from("./tests/tmp-test1-output2.bib"),
             log_level: log::LevelFilter::Error,
+            output_type: args::OutputType::Biblatex,
         };
 
         // run main function

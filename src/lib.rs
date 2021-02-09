@@ -35,7 +35,14 @@ pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     for entry in reader {
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        writer.write(&entry.to_biblatex_string())?;
+
+        // TODO maybe it's a bit faster to use a closure here that is constructed either to write
+        // bibtex or biblatex
+        // Maybe the compiler does this optimisation already for us
+        match config.output_type {
+            args::OutputType::Bibtex => writer.write(&entry.to_bibtex_string())?,
+            args::OutputType::Biblatex => writer.write(&entry.to_biblatex_string())?,
+        };
     }
     info!(
         "Wrote {} entries in {:?}.",
