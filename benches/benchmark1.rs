@@ -10,7 +10,7 @@ fn bench_with_zero_fields(input: &str) {
 
     // create new csvparser, converter, and writer
     let output = std::vec::Vec::new();
-    let csvparser = csvreader::Reader::new(input.as_bytes(), ",");
+    let csvparser = csvreader::Reader::new(input.as_bytes(), ",", false);
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
     let mut writer = bibwriter::Writer::new(output);
 
@@ -37,7 +37,7 @@ fn bench_with_five_valid_fields(input: &str) {
 
     // create new csvparser, converter, and writer
     let output = std::vec::Vec::new();
-    let csvparser = csvreader::Reader::new(input.as_bytes(), ",");
+    let csvparser = csvreader::Reader::new(input.as_bytes(), ",", false);
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
     let mut writer = bibwriter::Writer::new(output);
 
@@ -61,7 +61,7 @@ fn bench_with_five_invalid_fields(input: &str) {
 
     // create new csvparser, converter, and writer
     let output = std::vec::Vec::new();
-    let csvparser = csvreader::Reader::new(input.as_bytes(), ",");
+    let csvparser = csvreader::Reader::new(input.as_bytes(), ",", false);
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
     let mut writer = bibwriter::Writer::new(output);
 
@@ -96,7 +96,7 @@ fn bench_with_ten_valid_fields(input: &str) {
 
     // create new csvparser, converter, and writer
     let output = std::vec::Vec::new();
-    let csvparser = csvreader::Reader::new(input.as_bytes(), ",");
+    let csvparser = csvreader::Reader::new(input.as_bytes(), ",", false);
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
     let mut writer = bibwriter::Writer::new(output);
 
@@ -125,7 +125,7 @@ fn bench_with_ten_invalid_fields(input: &str) {
 
     // create new csvparser, converter, and writer
     let output = std::vec::Vec::new();
-    let csvparser = csvreader::Reader::new(input.as_bytes(), ",");
+    let csvparser = csvreader::Reader::new(input.as_bytes(), ",", false);
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
     let mut writer = bibwriter::Writer::new(output);
 

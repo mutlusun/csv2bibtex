@@ -6,14 +6,14 @@ pub struct Reader<R> {
 }
 
 impl<R: std::io::Read> Reader<R> {
-    pub fn new(data: R, delimiter: &str) -> Self {
+    pub fn new(data: R, delimiter: &str, flexible: bool) -> Self {
         // TODO there has to be a better way
         let delimiter = if delimiter == "\\t" { "\t" } else { delimiter };
 
         let mut reader = csv::ReaderBuilder::new()
             .has_headers(true)
             .delimiter(delimiter.as_bytes()[0])
-            .flexible(true)
+            .flexible(flexible)
             .from_reader(data);
 
         info!("CSV file has {} columns.", reader.headers().unwrap().len());
@@ -60,7 +60,7 @@ mod tests {
     #[test]
     fn test_csv_small() {
         let data = "author,year,title\nalice,2000,my title".as_bytes();
-        let mut parser = Reader::new(data, ",");
+        let mut parser = Reader::new(data, ",", false);
         let result: std::collections::HashMap<String, String> = [
             (String::from("author"), String::from("alice")),
             (String::from("year"), String::from("2000")),

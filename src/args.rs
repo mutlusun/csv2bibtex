@@ -17,10 +17,25 @@ impl Default for OutputType {
 pub struct Config {
     pub csv_delimiter: String,
     pub csv_field_mapping: std::collections::HashMap<String, String>,
+    pub csv_lazy: bool,
     pub file_input: std::path::PathBuf,
     pub file_output: std::path::PathBuf,
     pub log_level: log::LevelFilter,
     pub output_type: OutputType,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            csv_delimiter: String::from(","),
+            csv_field_mapping: std::collections::HashMap::new(),
+            csv_lazy: false,
+            file_input: std::path::PathBuf::new(),
+            file_output: std::path::PathBuf::new(),
+            log_level: log::LevelFilter::Info,
+            output_type: OutputType::default(),
+        }
+    }
 }
 
 impl Config {
@@ -80,6 +95,13 @@ impl Config {
                     .takes_value(false),
             )
             .arg(
+                clap::Arg::with_name("lazy")
+                    .help("Don't assume equal number of fields between CSV lines")
+                    .long("lazy")
+                    .short("l")
+                    .takes_value(false),
+            )
+            .arg(
                 clap::Arg::with_name("field-csv-to-bib")
                     .help("Assignment of csv fields to bibtex fields")
                     .long("field-mapping")
@@ -91,55 +113,50 @@ impl Config {
             )
             .get_matches();
 
+        // get defaults
+        let mut ret = Self::default();
+
         // input / output files
-        let file_input = std::path::PathBuf::from(matches.value_of("input-file").unwrap());
-        let file_output = std::path::PathBuf::from(matches.value_of("output-file").unwrap());
+        ret.file_input = std::path::PathBuf::from(matches.value_of("input-file").unwrap());
+        ret.file_output = std::path::PathBuf::from(matches.value_of("output-file").unwrap());
 
         // handle field assignments
-        let mut csv_field_mapping = std::collections::HashMap::new();
         if let Some(x) = matches.values_of("field-csv-to-bib") {
             for field in x {
                 let result: Vec<&str> = field.split('=').collect();
-                csv_field_mapping.insert(String::from(result[0]), String::from(result[1]));
+                ret.csv_field_mapping
+                    .insert(String::from(result[0]), String::from(result[1]));
             }
         }
 
         // csv options
-        let csv_delimiter = if let Some(x) = matches.value_of("csv-delimiter") {
-            String::from(x)
-        } else {
-            String::from(",")
+        if let Some(x) = matches.value_of("csv-delimiter") {
+            ret.csv_delimiter = String::from(x)
         };
 
         // logging handling
-        let log_level = if let Some(x) = matches.value_of("log-level") {
-            match x.to_lowercase().as_str() {
+        if let Some(x) = matches.value_of("log-level") {
+            ret.log_level = match x.to_lowercase().as_str() {
                 "debug" => log::LevelFilter::Debug,
                 "info" => log::LevelFilter::Info,
                 "warn" => log::LevelFilter::Warn,
                 "error" => log::LevelFilter::Error,
                 _ => return Err(anyhow!("Unknown log level given")),
             }
-        } else {
-            log::LevelFilter::Info
         };
 
         // output type
-        let output_type = if matches.is_present("bibtex") {
-            OutputType::Bibtex
+        if matches.is_present("bibtex") {
+            ret.output_type = OutputType::Bibtex;
         } else if matches.is_present("biblatex") {
-            OutputType::Biblatex
-        } else {
-            OutputType::default()
-        };
+            ret.output_type = OutputType::Biblatex;
+        }
 
-        Ok(Self {
-            file_input,
-            file_output,
-            csv_delimiter,
-            csv_field_mapping,
-            log_level,
-            output_type,
-        })
+        // lazy
+        if matches.is_present("lazy") {
+            ret.csv_lazy = true;
+        }
+
+        Ok(ret)
     }
 }

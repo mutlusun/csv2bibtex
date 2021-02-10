@@ -24,7 +24,7 @@ pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     let buf_output = std::io::BufWriter::new(file_output);
 
     // create new csvparser, converter, and writer
-    let reader = csvreader::Reader::new(&file_input, &config.csv_delimiter);
+    let reader = csvreader::Reader::new(&file_input, &config.csv_delimiter, config.csv_lazy);
     let converter =
         converter::FieldConverter::new(&mut config.csv_field_mapping, None).add_defaults();
     let mut writer = bibwriter::Writer::new(buf_output);

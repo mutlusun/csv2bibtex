@@ -6,14 +6,9 @@ mod test_input1 {
     #[test]
     fn only_with_defaults() {
         // build config structure
-        let mut config = args::Config {
-            csv_delimiter: String::from(","),
-            csv_field_mapping: std::collections::HashMap::new(),
-            file_input: std::path::PathBuf::from("./tests/test1-input1.csv"),
-            file_output: std::path::PathBuf::from("./tests/tmp-test1-output1.bib"),
-            log_level: log::LevelFilter::Error,
-            output_type: args::OutputType::Biblatex,
-        };
+        let mut config = args::Config::default();
+        config.file_input = std::path::PathBuf::from("./tests/test1-input1.csv");
+        config.file_output = std::path::PathBuf::from("./tests/tmp-test1-output1.bib");
 
         // run main function
         if let Err(e) = csv2bibtex::run(&mut config) {
@@ -38,39 +33,51 @@ mod test_input1 {
 
     #[test]
     fn with_custom_fields() {
+        // build config structure
+        let mut config = args::Config::default();
+        config.file_input = std::path::PathBuf::from("./tests/test1-input1.csv");
+        config.file_output = std::path::PathBuf::from("./tests/tmp-test1-output2.bib");
+
         // build field hash map
-        let mut csv_field_mapping = std::collections::HashMap::new();
-        csv_field_mapping.insert(String::from("title"), String::from("[[Document Title]]"));
-        csv_field_mapping.insert(String::from("author"), String::from("[[Authors]]"));
-        csv_field_mapping.insert(
+        config
+            .csv_field_mapping
+            .insert(String::from("title"), String::from("[[Document Title]]"));
+        config
+            .csv_field_mapping
+            .insert(String::from("author"), String::from("[[Authors]]"));
+        config.csv_field_mapping.insert(
             String::from("journal"),
             String::from("[[Publication Title]]"),
         );
-        csv_field_mapping.insert(String::from("year"), String::from("[[Publication Year]]"));
-        csv_field_mapping.insert(String::from("volume"), String::from("[[Volume]]"));
-        csv_field_mapping.insert(String::from("number"), String::from("[[Issue]]"));
-        csv_field_mapping.insert(
+        config
+            .csv_field_mapping
+            .insert(String::from("year"), String::from("[[Publication Year]]"));
+        config
+            .csv_field_mapping
+            .insert(String::from("volume"), String::from("[[Volume]]"));
+        config
+            .csv_field_mapping
+            .insert(String::from("number"), String::from("[[Issue]]"));
+        config.csv_field_mapping.insert(
             String::from("pages"),
             String::from("[[Start Page]]--[[End Page]]"),
         );
-        csv_field_mapping.insert(String::from("abstract"), String::from("[[Abstract]]"));
-        csv_field_mapping.insert(String::from("issn"), String::from("[[ISSN]]"));
-        csv_field_mapping.insert(String::from("isbn"), String::from("[[ISBNs]]"));
-        csv_field_mapping.insert(String::from("doi"), String::from("[[DOI]]"));
-        csv_field_mapping.insert(
+        config
+            .csv_field_mapping
+            .insert(String::from("abstract"), String::from("[[Abstract]]"));
+        config
+            .csv_field_mapping
+            .insert(String::from("issn"), String::from("[[ISSN]]"));
+        config
+            .csv_field_mapping
+            .insert(String::from("isbn"), String::from("[[ISBNs]]"));
+        config
+            .csv_field_mapping
+            .insert(String::from("doi"), String::from("[[DOI]]"));
+        config.csv_field_mapping.insert(
             String::from("keywords"),
             String::from("[[Author Keywords]]"),
         );
-
-        // build config structure
-        let mut config = args::Config {
-            csv_delimiter: String::from(","),
-            csv_field_mapping,
-            file_input: std::path::PathBuf::from("./tests/test1-input1.csv"),
-            file_output: std::path::PathBuf::from("./tests/tmp-test1-output2.bib"),
-            log_level: log::LevelFilter::Error,
-            output_type: args::OutputType::Biblatex,
-        };
 
         // run main function
         if let Err(e) = csv2bibtex::run(&mut config) {
