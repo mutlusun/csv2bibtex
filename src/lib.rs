@@ -1,5 +1,5 @@
-use anyhow::Context;
-use log::info;
+use anyhow::{anyhow, Context};
+use log::{error, info};
 
 pub mod args;
 pub mod bibwriter;
@@ -33,6 +33,17 @@ pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     let start = std::time::Instant::now();
 
     for entry in reader {
+        let entry = match entry {
+            Ok(x) => x,
+            Err(e) => {
+                if config.csv_lazy {
+                    error!("{}", e);
+                    continue;
+                } else {
+                    return Err(anyhow!("{}. Option \"-l\" might help.", e));
+                }
+            }
+        };
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
 

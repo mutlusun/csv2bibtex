@@ -16,6 +16,7 @@ fn bench_with_zero_fields(input: &str) {
 
     // main loop
     for entry in csvparser {
+        let entry = entry.unwrap();
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
         writer.write(&entry.to_biblatex_string()).unwrap();
@@ -43,6 +44,7 @@ fn bench_with_five_valid_fields(input: &str) {
 
     // main loop
     for entry in csvparser {
+        let entry = entry.unwrap();
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
         writer.write(&entry.to_biblatex_string()).unwrap();
@@ -67,6 +69,7 @@ fn bench_with_five_invalid_fields(input: &str) {
 
     // main loop
     for entry in csvparser {
+        let entry = entry.unwrap();
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
         writer.write(&entry.to_biblatex_string()).unwrap();
@@ -102,6 +105,7 @@ fn bench_with_ten_valid_fields(input: &str) {
 
     // main loop
     for entry in csvparser {
+        let entry = entry.unwrap();
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
         writer.write(&entry.to_biblatex_string()).unwrap();
@@ -131,6 +135,7 @@ fn bench_with_ten_invalid_fields(input: &str) {
 
     // main loop
     for entry in csvparser {
+        let entry = entry.unwrap();
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
         writer.write(&entry.to_biblatex_string()).unwrap();

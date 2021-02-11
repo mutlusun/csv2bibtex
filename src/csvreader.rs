@@ -1,4 +1,4 @@
-use log::{debug, error, info};
+use log::info;
 
 /// CSV Parser
 pub struct Reader<R> {
@@ -6,14 +6,14 @@ pub struct Reader<R> {
 }
 
 impl<R: std::io::Read> Reader<R> {
-    pub fn new(data: R, delimiter: &str, flexible: bool) -> Self {
+    pub fn new(data: R, delimiter: &str, error_recover: bool) -> Self {
         // TODO there has to be a better way
         let delimiter = if delimiter == "\\t" { "\t" } else { delimiter };
 
         let mut reader = csv::ReaderBuilder::new()
             .has_headers(true)
             .delimiter(delimiter.as_bytes()[0])
-            .flexible(flexible)
+            .flexible(error_recover)
             .from_reader(data);
 
         info!("CSV file has {} columns.", reader.headers().unwrap().len());
@@ -27,29 +27,10 @@ impl<R: std::io::Read> Reader<R> {
 }
 
 impl<R: std::io::Read> Iterator for Reader<R> {
-    type Item = std::collections::HashMap<String, String>;
+    type Item = Result<std::collections::HashMap<String, String>, csv::Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let result = self.iterator.next();
-
-        match result {
-            Some(x) => {
-                debug!(
-                    "Read CSV file, line: {}",
-                    // I'm not sure why there is an offset of one here.
-                    &self.iterator.reader().position().line() - 1
-                );
-                match x {
-                    Ok(x) => Some(x),
-                    Err(e) => {
-                        // TODO recover from errors
-                        error!("{}", e);
-                        None
-                    }
-                }
-            }
-            None => None,
-        }
+        self.iterator.next()
     }
 }
 
@@ -70,6 +51,6 @@ mod tests {
         .cloned()
         .collect();
 
-        assert_eq!(parser.next(), Some(result));
+        assert_eq!(parser.next().unwrap().unwrap(), result);
     }
 }

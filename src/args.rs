@@ -17,6 +17,7 @@ impl Default for OutputType {
 pub struct Config {
     pub csv_delimiter: String,
     pub csv_field_mapping: std::collections::HashMap<String, String>,
+    /// Try to recover from as much errors as possible
     pub csv_lazy: bool,
     pub file_input: std::path::PathBuf,
     pub file_output: std::path::PathBuf,
@@ -71,8 +72,8 @@ impl Config {
             .arg(
                 clap::Arg::with_name("csv-delimiter")
                     .help("Delimiter between cells in CSV file")
-                    .long("csv-delimiter")
-                    .short("c")
+                    .long("delimiter")
+                    .short("d")
                     .takes_value(true)
                     .value_name("DELIMITER"),
             )
@@ -84,19 +85,19 @@ impl Config {
             )
             .arg(
                 clap::Arg::with_name("bibtex")
-                    .help("Print output in BibTeX mode")
+                    .help("Print output in BibTeX mode (do not use with --biblatex)")
                     .long("bibtex")
                     .takes_value(false),
             )
             .arg(
                 clap::Arg::with_name("biblatex")
-                    .help("Print output in BibLaTeX mode")
+                    .help("Print output in BibLaTeX mode (do not use with --bibtex)")
                     .long("biblatex")
                     .takes_value(false),
             )
             .arg(
                 clap::Arg::with_name("lazy")
-                    .help("Don't assume equal number of fields between CSV lines")
+                    .help("Try to recover from as much errors as possible.")
                     .long("lazy")
                     .short("l")
                     .takes_value(false),
