@@ -16,7 +16,7 @@ mod test_input2 {
         config.csv_delimiter = String::from("\t");
 
         // run main function
-        let result = csv2bibtex::run(&mut config).unwrap();
+        csv2bibtex::run(&mut config).unwrap();
     }
 
     #[test]

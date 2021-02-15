@@ -1,25 +1,57 @@
 use anyhow::Context;
 
-/// Writer
-pub struct Writer<W: std::io::Write> {
+/// BibWriter Trait
+pub trait BibWrite {
+    fn write(&mut self, entry: &biblatex::Entry) -> Result<(), anyhow::Error>;
+    fn get_num_written_entries(&self) -> usize;
+}
+
+/// Biblatex type implementing bibwriter trait
+pub struct BiblatexWriter<W: std::io::Write> {
     writer: W,
     counter: usize,
 }
 
-impl<W: std::io::Write> Writer<W> {
+impl<W: std::io::Write> BiblatexWriter<W> {
     pub fn new(writer: W) -> Self {
         Self { writer, counter: 0 }
     }
+}
 
-    pub fn write(&mut self, data: &str) -> Result<(), anyhow::Error> {
-        write!(self.writer, "{}\n\n", data).context("Could not write entry to file.")?;
-
+impl<W: std::io::Write> BibWrite for BiblatexWriter<W> {
+    fn write(&mut self, entry: &biblatex::Entry) -> Result<(), anyhow::Error> {
+        write!(self.writer, "{}\n\n", entry.to_biblatex_string())
+            .context("Could not write entry to file")?;
         self.counter += 1;
 
         Ok(())
     }
+    fn get_num_written_entries(&self) -> usize {
+        self.counter
+    }
+}
 
-    pub fn get_num_written_entries(&self) -> usize {
+/// Bibtex type implementing bibwriter trait
+pub struct BibtexWriter<W: std::io::Write> {
+    writer: W,
+    counter: usize,
+}
+
+impl<W: std::io::Write> BibtexWriter<W> {
+    pub fn new(writer: W) -> Self {
+        Self { writer, counter: 0 }
+    }
+}
+
+impl<W: std::io::Write> BibWrite for BibtexWriter<W> {
+    fn write(&mut self, entry: &biblatex::Entry) -> Result<(), anyhow::Error> {
+        write!(self.writer, "{}\n\n", entry.to_bibtex_string())
+            .context("Could not write entry to file")?;
+        self.counter += 1;
+
+        Ok(())
+    }
+    fn get_num_written_entries(&self) -> usize {
         self.counter
     }
 }

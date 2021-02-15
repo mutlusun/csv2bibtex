@@ -1,5 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use csv2bibtex::bibwriter;
+use csv2bibtex::bibwriter::BibWrite;
 use csv2bibtex::converter;
 use csv2bibtex::csvreader;
 use csv2bibtex::entry;
@@ -12,14 +13,14 @@ fn bench_with_zero_fields(input: &str) {
     let output = std::vec::Vec::new();
     let csvparser = csvreader::Reader::new(input.as_bytes(), ",", false);
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
-    let mut writer = bibwriter::Writer::new(output);
+    let mut writer = bibwriter::BiblatexWriter::new(output);
 
     // main loop
     for entry in csvparser {
         let entry = entry.unwrap();
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        writer.write(&entry.to_biblatex_string()).unwrap();
+        writer.write(&entry).unwrap();
     }
 }
 
@@ -40,14 +41,14 @@ fn bench_with_five_valid_fields(input: &str) {
     let output = std::vec::Vec::new();
     let csvparser = csvreader::Reader::new(input.as_bytes(), ",", false);
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
-    let mut writer = bibwriter::Writer::new(output);
+    let mut writer = bibwriter::BiblatexWriter::new(output);
 
     // main loop
     for entry in csvparser {
         let entry = entry.unwrap();
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        writer.write(&entry.to_biblatex_string()).unwrap();
+        writer.write(&entry).unwrap();
     }
 }
 
@@ -65,14 +66,14 @@ fn bench_with_five_invalid_fields(input: &str) {
     let output = std::vec::Vec::new();
     let csvparser = csvreader::Reader::new(input.as_bytes(), ",", false);
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
-    let mut writer = bibwriter::Writer::new(output);
+    let mut writer = bibwriter::BiblatexWriter::new(output);
 
     // main loop
     for entry in csvparser {
         let entry = entry.unwrap();
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        writer.write(&entry.to_biblatex_string()).unwrap();
+        writer.write(&entry).unwrap();
     }
 }
 
@@ -101,14 +102,14 @@ fn bench_with_ten_valid_fields(input: &str) {
     let output = std::vec::Vec::new();
     let csvparser = csvreader::Reader::new(input.as_bytes(), ",", false);
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
-    let mut writer = bibwriter::Writer::new(output);
+    let mut writer = bibwriter::BiblatexWriter::new(output);
 
     // main loop
     for entry in csvparser {
         let entry = entry.unwrap();
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        writer.write(&entry.to_biblatex_string()).unwrap();
+        writer.write(&entry).unwrap();
     }
 }
 
@@ -131,14 +132,14 @@ fn bench_with_ten_invalid_fields(input: &str) {
     let output = std::vec::Vec::new();
     let csvparser = csvreader::Reader::new(input.as_bytes(), ",", false);
     let converter = converter::FieldConverter::new(&mut csv_field_mapping, None);
-    let mut writer = bibwriter::Writer::new(output);
+    let mut writer = bibwriter::BiblatexWriter::new(output);
 
     // main loop
     for entry in csvparser {
         let entry = entry.unwrap();
         let entry = converter.convert_fields(entry);
         let entry = entry::Entry::from_hashmap(entry);
-        writer.write(&entry.to_biblatex_string()).unwrap();
+        writer.write(&entry).unwrap();
     }
 }
 
