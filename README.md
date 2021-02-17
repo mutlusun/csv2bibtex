@@ -9,7 +9,7 @@ larger CSV files. Please fill a bug report if it is too slow for you.
 
 ```
 csv2bibtex 0.1.0
-mutluler
+mutluyuz
 
 
 USAGE:
@@ -62,7 +62,7 @@ This is a small rust utility. You have to install
 [rust](https://www.rust-lang.org/) and execute the following commands:
 
 ```
-git clone https://codeberg.org/mutluler/csv2bibtex
+git clone https://codeberg.org/mutluyuz/csv2bibtex
 cd csv2bibtex
 cargo install --path .
 ```
@@ -72,4 +72,4 @@ cargo install --path .
 
 Of course there are not any bugs in this software. However, you may encounter 
 unexpected behavior. Please report them at 
-https://codeberg.org/mutluler/csv2bibtex/issues.
+https://codeberg.org/mutluyuz/csv2bibtex/issues.
