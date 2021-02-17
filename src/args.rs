@@ -2,6 +2,7 @@ use anyhow::anyhow;
 use clap::{crate_authors, crate_description, crate_name, crate_version};
 
 /// Output Type (BibTex vs. BibLaTeX)
+#[derive(Debug, Clone)]
 pub enum OutputType {
     Bibtex,
     Biblatex,
@@ -14,6 +15,7 @@ impl Default for OutputType {
 }
 
 /// Main Config
+#[derive(Debug, Clone)]
 pub struct Config {
     pub csv_delimiter: String,
     pub csv_field_mapping: std::collections::HashMap<String, String>,

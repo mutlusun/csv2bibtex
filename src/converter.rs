@@ -1,16 +1,12 @@
 /// Convert Fields According to Command Line Arguments
 pub struct FieldConverter<'a> {
     map: &'a mut std::collections::HashMap<String, String>,
-    //map_postprocess: Option<std::collections::HashMap<&'a str, (String, String)>>,
     // compile regex only once
     regex: regex::Regex,
 }
 
 impl<'a> FieldConverter<'a> {
-    pub fn new(
-        replacement_list: &'a mut std::collections::HashMap<String, String>,
-        map_postprocess: Option<std::collections::HashMap<&'a str, (String, String)>>,
-    ) -> Self {
+    pub fn new(replacement_list: &'a mut std::collections::HashMap<String, String>) -> Self {
         Self {
             map: replacement_list,
             //map_postprocess,
@@ -20,6 +16,7 @@ impl<'a> FieldConverter<'a> {
 
     pub fn add_defaults(self) -> Self {
         // insert some defaults that may fit to the given column names in the csv file
+        // insert only if key doesn't exist already
         self.map
             .entry(String::from("entrytype"))
             .or_insert_with(|| String::from("[[type]]"));
@@ -67,14 +64,6 @@ impl<'a> FieldConverter<'a> {
 
         ret
     }
-
-    // pub fn postprocessing(&self, input: &mut std::collections::HashMap<&'a str, &'a str>) {
-    //     for (k, v) in &self.map_postprocess {
-    //         if let Some(x) = input.get_mut(&k) {
-    //             *x = &x.replace(v.0, v.1);
-    //         }
-    //     }
-    // }
 }
 
 #[cfg(test)]
@@ -93,7 +82,7 @@ mod tests {
 
         let mut replacement_list = std::collections::HashMap::new();
 
-        let converter = FieldConverter::new(&mut replacement_list, None).add_defaults();
+        let converter = FieldConverter::new(&mut replacement_list).add_defaults();
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);
@@ -113,7 +102,7 @@ mod tests {
         replacement_list.insert(String::from("pages"), String::from("[[Start Page]]"));
         replacement_list.insert(String::from("isbn"), String::from("[[ISBNs]]"));
 
-        let converter = FieldConverter::new(&mut replacement_list, None).add_defaults();
+        let converter = FieldConverter::new(&mut replacement_list).add_defaults();
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);
@@ -134,7 +123,7 @@ mod tests {
             String::from("[[Start Page]]--[[End Page]]"),
         );
 
-        let converter = FieldConverter::new(&mut replacement_list, None).add_defaults();
+        let converter = FieldConverter::new(&mut replacement_list).add_defaults();
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);
@@ -154,7 +143,7 @@ mod tests {
             String::from("[[Start Page]]--[[Start Page]]"),
         );
 
-        let converter = FieldConverter::new(&mut replacement_list, None).add_defaults();
+        let converter = FieldConverter::new(&mut replacement_list).add_defaults();
         let ret = converter.convert_fields(input);
 
         assert_eq!(ret, output);

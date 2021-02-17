@@ -25,8 +25,7 @@ pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
 
     // create new csvparser, converter, and writer
     let reader = csvreader::Reader::new(&file_input, &config.csv_delimiter, config.csv_lazy);
-    let converter =
-        converter::FieldConverter::new(&mut config.csv_field_mapping, None).add_defaults();
+    let converter = converter::FieldConverter::new(&mut config.csv_field_mapping).add_defaults();
     let mut writer: Box<dyn bibwriter::BibWrite> = match config.output_type {
         args::OutputType::Bibtex => Box::new(bibwriter::BibtexWriter::new(buf_output)),
         args::OutputType::Biblatex => Box::new(bibwriter::BiblatexWriter::new(buf_output)),
