@@ -25,6 +25,7 @@ pub struct Config {
     pub file_output: std::path::PathBuf,
     pub log_level: log::LevelFilter,
     pub output_type: OutputType,
+    pub mapping_defaults: bool,
 }
 
 impl Default for Config {
@@ -37,6 +38,7 @@ impl Default for Config {
             file_output: std::path::PathBuf::new(),
             log_level: log::LevelFilter::Info,
             output_type: OutputType::default(),
+            mapping_defaults: true,
         }
     }
 }
@@ -105,6 +107,12 @@ impl Config {
                     .takes_value(false),
             )
             .arg(
+                clap::Arg::with_name("no-defaults")
+                    .help("Don't add default field mappings.")
+                    .long("no-defaults")
+                    .takes_value(false),
+            )
+            .arg(
                 clap::Arg::with_name("field-csv-to-bib")
                     .help("Assignment of csv fields to bibtex fields")
                     .long("field-mapping")
@@ -158,6 +166,11 @@ impl Config {
         // lazy
         if matches.is_present("lazy") {
             ret.csv_lazy = true;
+        }
+
+        // prevent the use of defaults?
+        if matches.is_present("no-defaults") {
+            ret.mapping_defaults = false;
         }
 
         Ok(ret)

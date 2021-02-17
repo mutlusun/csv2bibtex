@@ -191,7 +191,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
 
     // clean up
-    std::fs::remove_file("./tests/tmp-benchmark1-output1.bib").unwrap();
+    std::fs::remove_file("./benches/tmp-benchmark1-output1.bib").unwrap();
 }
 
 criterion_group!(benches, criterion_benchmark);
