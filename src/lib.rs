@@ -7,7 +7,7 @@ pub mod converter;
 pub mod csvreader;
 pub mod entry;
 
-pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
+pub fn run(config: &args::Config) -> Result<(), anyhow::Error> {
     // open file for reading and writing
     let file_input = std::fs::File::open(&config.file_input)
         .with_context(|| format!("Could not open csv file: {}", &config.file_input.display()))?;
@@ -24,9 +24,10 @@ pub fn run(config: &mut args::Config) -> Result<(), anyhow::Error> {
     );
 
     // create new csvparser, converter, and writer
+    let mut csv_field_mapping = config.csv_field_mapping.clone();
     let reader = csvreader::Reader::new(&file_input, &config.csv_delimiter, config.csv_lazy);
     let converter = {
-        let mut ret = converter::FieldConverter::new(&mut config.csv_field_mapping);
+        let mut ret = converter::FieldConverter::new(&mut csv_field_mapping);
         if config.mapping_defaults {
             ret = ret.add_defaults()
         }

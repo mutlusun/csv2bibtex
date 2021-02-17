@@ -3,8 +3,7 @@ use log::error;
 
 fn main() {
     // build config structure
-    // TODO config shouldn't be mutable
-    let mut config = args::Config::new().unwrap_or_else(|e| {
+    let config = args::Config::new().unwrap_or_else(|e| {
         eprintln!("Problem parsing arguments: {}.", e);
         std::process::exit(1);
     });
@@ -18,7 +17,7 @@ fn main() {
     .unwrap();
 
     // run main function
-    if let Err(e) = csv2bibtex::run(&mut config) {
+    if let Err(e) = csv2bibtex::run(&config) {
         error!("{:#}.", e);
         std::process::exit(1);
     }
