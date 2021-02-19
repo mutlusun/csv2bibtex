@@ -89,13 +89,13 @@ impl Config {
             )
             .arg(
                 clap::Arg::with_name("bibtex")
-                    .help("Print output in BibTeX mode (do not use with --biblatex)")
+                    .help("Print output in BibTeX mode")
                     .long("bibtex")
                     .takes_value(false),
             )
             .arg(
                 clap::Arg::with_name("biblatex")
-                    .help("Print output in BibLaTeX mode (do not use with --bibtex)")
+                    .help("Print output in BibLaTeX mode (default)")
                     .long("biblatex")
                     .takes_value(false),
             )

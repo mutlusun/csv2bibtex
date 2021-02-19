@@ -22,5 +22,3 @@ jobs:
       run: cargo test --verbose
     - name: Run benchmarks
       run: cargo bench
-    - name: Run formatter
-      run: cargo fmt

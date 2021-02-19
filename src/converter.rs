@@ -25,7 +25,13 @@ impl<'a> FieldConverter<'a> {
             .or_insert_with(|| String::from("[[bibtexkey]]"));
         self.map
             .entry(String::from("title"))
+            .or_insert_with(|| String::from("[[title]]"));
+        self.map
+            .entry(String::from("title"))
             .or_insert_with(|| String::from("[[titles]]"));
+        self.map
+            .entry(String::from("author"))
+            .or_insert_with(|| String::from("[[author]]"));
         self.map
             .entry(String::from("author"))
             .or_insert_with(|| String::from("[[authors]]"));

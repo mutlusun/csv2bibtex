@@ -16,8 +16,8 @@ USAGE:
     csv2bibtex [FLAGS] [OPTIONS] <INPUT> <OUTPUT>
 
 FLAGS:
-        --biblatex       Print output in BibLaTeX mode (do not use with --bibtex)
-        --bibtex         Print output in BibTeX mode (do not use with --biblatex)
+        --biblatex       Print output in BibLaTeX mode (default)
+        --bibtex         Print output in BibTeX mode
     -h, --help           Prints help information
     -l, --lazy           Try to recover from as much errors as possible.
         --no-defaults    Don't add default field mappings.
@@ -44,15 +44,21 @@ csv2bibtex \
     output.bib
 ```
 
-CSV fields can even be combined:
+The CSV field has to be enclosed betwee `[[` and `]]`. This offers the 
+possibility to add regular characters like in the following example:
 
 ```
 csv2bibtex \
     --field-mapping "pages=[[StartPage]]--[[EndPage]]" \
+    --field-mapping "journal=My Great Journal" \
     input.csv \
     output.bib
 ```
 
+There are two special fields: `entrytype` and `bibtexkey`. The former specifies 
+the type of the BibTeX entry, the latter the BibTeX key. They can be used like 
+any other field (see above). In addition, there are some default field mappings 
+set (like `title=[[titles]]`, use `--no-defaults` to prevent this).
 The field mapping argument can be given multiple times to map multiple fields.
 
 
