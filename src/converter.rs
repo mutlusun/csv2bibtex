@@ -27,14 +27,20 @@ impl<'a> FieldConverter<'a> {
             .entry(String::from("title"))
             .or_insert_with(|| String::from("[[title]]"));
         self.map
-            .entry(String::from("title"))
-            .or_insert_with(|| String::from("[[titles]]"));
-        self.map
             .entry(String::from("author"))
             .or_insert_with(|| String::from("[[author]]"));
         self.map
-            .entry(String::from("author"))
-            .or_insert_with(|| String::from("[[authors]]"));
+            .entry(String::from("abstract"))
+            .or_insert_with(|| String::from("[[abstract]]"));
+        self.map
+            .entry(String::from("journal"))
+            .or_insert_with(|| String::from("[[journal]]"));
+        self.map
+            .entry(String::from("volume"))
+            .or_insert_with(|| String::from("[[volume]]"));
+        self.map
+            .entry(String::from("number"))
+            .or_insert_with(|| String::from("[[issue]]"));
 
         self
     }
@@ -79,8 +85,8 @@ mod tests {
     #[test]
     fn test_convert_default_fields() {
         let mut input = std::collections::HashMap::new();
-        input.insert(String::from("authors"), String::from("author1, author2"));
-        input.insert(String::from("titles"), String::from("My eloquent title"));
+        input.insert(String::from("author"), String::from("author1, author2"));
+        input.insert(String::from("title"), String::from("My eloquent title"));
 
         let mut output = std::collections::HashMap::new();
         output.insert(String::from("author"), String::from("author1, author2"));
