@@ -21,21 +21,22 @@ impl std::ops::Deref for Entry {
 
 impl Default for Entry {
     fn default() -> Self {
-        Self::new()
+        Self::new(String::from("none"))
     }
 }
 
 impl Entry {
-    pub fn new() -> Self {
-        let item = biblatex::Entry::new(String::from("none"), biblatex::EntryType::Article);
+    pub fn new(bibkey: String) -> Self {
+        let item = biblatex::Entry::new(bibkey, biblatex::EntryType::Article);
 
         Self { item }
     }
 
-    pub fn from_hashmap(map: std::collections::HashMap<String, String>) -> Self {
+    /// `alt_bibkey` specifies the bibkey if it is not present in the HashMap.
+    pub fn from_hashmap(map: std::collections::HashMap<String, String>, alt_bibkey: String) -> Self {
         let key = map
             .get("key")
-            .map_or_else(|| String::from("none"), |x| x.to_owned());
+            .map_or_else(|| alt_bibkey, |x| x.to_owned());
         let entrytype = map
             .get("entrytype")
             .map_or_else(|| String::from("article"), |x| x.to_owned());

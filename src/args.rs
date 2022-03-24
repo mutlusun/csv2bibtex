@@ -1,5 +1,8 @@
 use anyhow::anyhow;
-use clap::{crate_authors, crate_description, crate_name, crate_version};
+use clap::crate_name;
+use clap::crate_version;
+use clap::crate_authors;
+use clap::crate_description;
 
 /// Output Type (BibTex vs. BibLaTeX)
 #[derive(Debug, Clone)]
@@ -45,12 +48,12 @@ impl Default for Config {
 
 impl Config {
     pub fn new() -> Result<Self, anyhow::Error> {
-        let matches = clap::App::new(crate_name!())
+        let matches = clap::Command::new(crate_name!())
             .version(crate_version!())
             .about(crate_description!())
             .author(crate_authors!())
             .arg(
-                clap::Arg::with_name("input-file")
+                clap::Arg::new("input-file")
                     .help("Input file to use")
                     .takes_value(true)
                     .value_name("INPUT")
@@ -58,7 +61,7 @@ impl Config {
                     .index(1),
             )
             .arg(
-                clap::Arg::with_name("output-file")
+                clap::Arg::new("output-file")
                     .help("Output file to use")
                     .takes_value(true)
                     .value_name("OUTPUT")
@@ -66,59 +69,59 @@ impl Config {
                     .index(2),
             )
             .arg(
-                clap::Arg::with_name("log-level")
+                clap::Arg::new("log-level")
                     .help("Verbosity level, either DEBUG, INFO, WARN, or ERROR")
                     .long("verbosity")
-                    .short("v")
+                    .short('v')
                     .takes_value(true)
                     .value_name("LEVEL"),
             )
             .arg(
-                clap::Arg::with_name("csv-delimiter")
+                clap::Arg::new("csv-delimiter")
                     .help("Delimiter between cells in CSV file")
                     .long("delimiter")
-                    .short("d")
+                    .short('d')
                     .takes_value(true)
                     .value_name("DELIMITER"),
             )
             .group(
-                clap::ArgGroup::with_name("output-type")
+                clap::ArgGroup::new("output-type")
                     .args(&["bibtex", "biblatex"])
                     .multiple(false)
                     .required(false),
             )
             .arg(
-                clap::Arg::with_name("bibtex")
+                clap::Arg::new("bibtex")
                     .help("Print output in BibTeX mode")
                     .long("bibtex")
                     .takes_value(false),
             )
             .arg(
-                clap::Arg::with_name("biblatex")
+                clap::Arg::new("biblatex")
                     .help("Print output in BibLaTeX mode (default)")
                     .long("biblatex")
                     .takes_value(false),
             )
             .arg(
-                clap::Arg::with_name("lazy")
+                clap::Arg::new("lazy")
                     .help("Try to recover from as much errors as possible.")
                     .long("lazy")
-                    .short("l")
+                    .short('l')
                     .takes_value(false),
             )
             .arg(
-                clap::Arg::with_name("no-defaults")
+                clap::Arg::new("no-defaults")
                     .help("Don't add default field mappings.")
                     .long("no-defaults")
                     .takes_value(false),
             )
             .arg(
-                clap::Arg::with_name("field-csv-to-bib")
+                clap::Arg::new("field-csv-to-bib")
                     .help("Assignment of csv fields to bibtex fields")
                     .long("field-mapping")
-                    .short("f")
+                    .short('f')
                     .takes_value(true)
-                    .multiple(true)
+                    .multiple_occurrences(true)
                     .number_of_values(1)
                     .value_name("FIELD"),
             )

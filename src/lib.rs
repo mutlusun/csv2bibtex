@@ -41,12 +41,12 @@ pub fn run(config: &args::Config) -> Result<(), anyhow::Error> {
     // main loop
     let start = std::time::Instant::now();
 
-    for entry in reader {
+    for (index, entry) in reader.enumerate() {
         let entry = match entry {
             Ok(x) => x,
             Err(e) => {
                 if config.csv_lazy {
-                    error!("{}", e);
+                    error!("Error converting item: {}. Skipping item.", e);
                     continue;
                 } else {
                     return Err(anyhow!("{}. Option \"-l\" might help.", e));
@@ -54,7 +54,7 @@ pub fn run(config: &args::Config) -> Result<(), anyhow::Error> {
             }
         };
         let entry = converter.convert_fields(entry);
-        let entry = entry::Entry::from_hashmap(entry);
+        let entry = entry::Entry::from_hashmap(entry, format!("entry_{index}"));
         writer.write(&entry)?;
     }
     info!(
