@@ -1,14 +1,12 @@
 # csv2bibtex
 
-A small command line utility to parse CSV files to Bib(La)TeX files. This 
-utility is not optimised for speed but should be fast enough to parse even 
-larger CSV files. Please fill a bug report if it is too slow for you.
+A small command line utility to parse CSV files to Bib(La)TeX files.
 
 
 ## Usage
 
 ```
-csv2bibtex 0.1.0
+csv2bibtex 0.2.0
 mutluyuz
 
 
@@ -74,8 +72,16 @@ cargo install --path .
 ```
 
 
-## Bugs
+## Bugs and Contributing
 
 Of course there are not any bugs in this software. However, you may encounter 
 unexpected behavior. Please report them at 
 https://codeberg.org/mutluyuz/csv2bibtex/issues.
+Please use also the Codeberg page for pull requests.
+
+## Speed
+
+Some very rough benchmarking on my (rather old) laptop yielded about 10.000
+processed lines per second. However, this depends on the number of fields and
+thus, runtime might be a bit slower or faster. You can run your own benchmarks
+with `cargo bench`.
