@@ -22,3 +22,7 @@ jobs:
       run: cargo test --verbose
     - name: Run benchmarks
       run: cargo bench
+    - name: Check format
+      run: cargo fmt -- --check
+    - name: Run clippy lints
+      run: cargo clippy --all-targets --all-features -- -D warnings
