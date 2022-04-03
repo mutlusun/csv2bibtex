@@ -13,7 +13,7 @@ fn main() {
         config.log_level,
         simplelog::Config::default(),
         simplelog::TerminalMode::Mixed,
-        simplelog::ColorChoice::Auto
+        simplelog::ColorChoice::Auto,
     )
     .unwrap();
 

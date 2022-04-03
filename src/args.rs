@@ -1,8 +1,8 @@
 use anyhow::anyhow;
-use clap::crate_name;
-use clap::crate_version;
 use clap::crate_authors;
 use clap::crate_description;
+use clap::crate_name;
+use clap::crate_version;
 
 /// Output Type (BibTex vs. BibLaTeX)
 #[derive(Debug, Clone)]
@@ -128,11 +128,20 @@ impl Config {
             .get_matches();
 
         // get defaults
-        let mut ret = Self::default();
+        let mut ret = Self {
+            // input / output files
+            file_input: std::path::PathBuf::from(matches.value_of("input-file").unwrap()),
+            file_output: std::path::PathBuf::from(matches.value_of("output-file").unwrap()),
 
-        // input / output files
-        ret.file_input = std::path::PathBuf::from(matches.value_of("input-file").unwrap());
-        ret.file_output = std::path::PathBuf::from(matches.value_of("output-file").unwrap());
+            // Lazy switch (recover from errors)
+            csv_lazy: matches.is_present("lazy"),
+
+            // prevent the use of defaults?
+            mapping_defaults: !matches.is_present("no-defaults"),
+
+            // Set other fields to default values
+            ..Default::default()
+        };
 
         // handle field assignments
         if let Some(x) = matches.values_of("field-csv-to-bib") {
@@ -159,21 +168,9 @@ impl Config {
             }
         };
 
-        // output type
+        // Output type. Biblatex is the default ...
         if matches.is_present("bibtex") {
             ret.output_type = OutputType::Bibtex;
-        } else if matches.is_present("biblatex") {
-            ret.output_type = OutputType::Biblatex;
-        }
-
-        // lazy
-        if matches.is_present("lazy") {
-            ret.csv_lazy = true;
-        }
-
-        // prevent the use of defaults?
-        if matches.is_present("no-defaults") {
-            ret.mapping_defaults = false;
         }
 
         Ok(ret)

@@ -33,10 +33,11 @@ impl Entry {
     }
 
     /// `alt_bibkey` specifies the bibkey if it is not present in the HashMap.
-    pub fn from_hashmap(map: std::collections::HashMap<String, String>, alt_bibkey: String) -> Self {
-        let key = map
-            .get("key")
-            .map_or_else(|| alt_bibkey, |x| x.to_owned());
+    pub fn from_hashmap(
+        map: std::collections::HashMap<String, String>,
+        alt_bibkey: String,
+    ) -> Self {
+        let key = map.get("key").map_or_else(|| alt_bibkey, |x| x.to_owned());
         let entrytype = map
             .get("entrytype")
             .map_or_else(|| String::from("article"), |x| x.to_owned());
