@@ -5,7 +5,6 @@ pub mod args;
 pub mod bibwriter;
 pub mod converter;
 pub mod csvreader;
-pub mod entry;
 
 pub fn run(config: &args::Config) -> Result<(), anyhow::Error> {
     // open file for reading and writing
@@ -53,8 +52,7 @@ pub fn run(config: &args::Config) -> Result<(), anyhow::Error> {
                 }
             }
         };
-        let entry = converter.convert_fields(entry);
-        let entry = entry::Entry::from_hashmap(entry, format!("entry_{index}"));
+        let entry = converter.convert_fields(entry, format!("entry_{index}"));
         writer.write(&entry)?;
     }
     info!(

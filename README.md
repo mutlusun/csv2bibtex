@@ -81,7 +81,7 @@ Please use also the Codeberg page for pull requests.
 
 ## Speed
 
-Some very rough benchmarking on my (rather old) laptop yielded about 10.000
+Some very rough benchmarking on my (rather old) laptop yielded about 500.000
 processed lines per second. However, this depends on the number of fields and
 thus, runtime might be a bit slower or faster. You can run your own benchmarks
 with `cargo bench`.

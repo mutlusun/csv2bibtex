@@ -1,7 +1,10 @@
 /// Convert Fields According to Command Line Arguments
 pub struct FieldConverter<'a> {
+    // Collection of bibtex entries and their corresponding CSV fields. CSV fields can also be
+    // combined and mixed with other characters, e.g., "[[page_beginning]]--[[page_end]]".
     map: &'a mut std::collections::HashMap<String, String>,
-    // compile regex only once
+    // The regex to replace CSV fields with their corresponding entry. Saved here to compile the
+    // regex only once.
     regex: regex::Regex,
 }
 
@@ -9,7 +12,6 @@ impl<'a> FieldConverter<'a> {
     pub fn new(replacement_list: &'a mut std::collections::HashMap<String, String>) -> Self {
         Self {
             map: replacement_list,
-            //map_postprocess,
             regex: regex::Regex::new("\\[\\[(.+?)\\]\\]").unwrap(),
         }
     }
@@ -48,9 +50,40 @@ impl<'a> FieldConverter<'a> {
     pub fn convert_fields(
         &self,
         input: std::collections::HashMap<String, String>,
-    ) -> std::collections::HashMap<String, String> {
-        // TODO use with_capacity length of self.map
-        let mut ret = std::collections::HashMap::new();
+        default_key: String,
+    ) -> biblatex::Entry {
+        // Check whether we have a key specified in `self.map` and use this one or set a default
+        // value.
+        //
+        // TODO that looks ugly!
+        let key: String = if let Some(x) = self.map.get("bibtexkey") {
+            self.regex.replace_all(x, |caps: &regex::Captures| {
+                if let Some(y) = input.get(&caps[1]) {
+                    y.to_string()
+                } else {
+                    default_key.clone()
+                }
+            }).into_owned()
+        } else {
+            default_key
+        };
+
+        // Check whether we have a entry type specified in `self.map` and use this one or set a
+        // default value.
+        let entrytype: String = if let Some(x) = self.map.get("entrytype") {
+            self.regex.replace_all(x, |caps: &regex::Captures| {
+                if let Some(y) = input.get(&caps[1]) {
+                    y.to_string()
+                } else {
+                    String::from("article")
+                }
+            }).into_owned()
+        } else {
+            String::from("article")
+        };
+
+        // Create a return entry
+        let mut ret = biblatex::Entry::new(key, biblatex::EntryType::new(&entrytype));
 
         // TODO optimize:
         // 1. remove keys/entries that are non-existent in csv files
@@ -59,7 +92,10 @@ impl<'a> FieldConverter<'a> {
         // 3. Maybe it's best to iterate over the fields in the init function and collect only the
         //    captures. Then we can iterate over the captures here.
         for (k, v) in self.map.iter() {
-            // replace fields and save them in the `ret` map. This is the output of the current
+            if k == "bibtexkey" || k == "entrytype" {
+                continue
+            }
+            // replace fields and save them in the `ret` entry. This is the output of the current
             // function and will be printed later
             let result = self.regex.replace_all(v, |caps: &regex::Captures| {
                 if let Some(x) = input.get(&caps[1]) {
@@ -69,8 +105,8 @@ impl<'a> FieldConverter<'a> {
                 }
             });
 
-            if result != "" {
-                ret.insert(String::from(k), result.into_owned());
+            if !result.is_empty() {
+                ret.set(k, vec![biblatex::Chunk::Normal(result.into_owned())]);
             }
         }
 
@@ -88,14 +124,45 @@ mod tests {
         input.insert(String::from("author"), String::from("author1, author2"));
         input.insert(String::from("title"), String::from("My eloquent title"));
 
-        let mut output = std::collections::HashMap::new();
-        output.insert(String::from("author"), String::from("author1, author2"));
-        output.insert(String::from("title"), String::from("My eloquent title"));
+        let mut output = biblatex::Entry::new(String::from("test1"), biblatex::EntryType::Article);
+        output.set("author", vec![biblatex::Chunk::Normal(String::from("author1, author2"))]);
+        output.set("title", vec![biblatex::Chunk::Normal(String::from("My eloquent title"))]);
 
         let mut replacement_list = std::collections::HashMap::new();
 
         let converter = FieldConverter::new(&mut replacement_list).add_defaults();
-        let ret = converter.convert_fields(input);
+        let ret = converter.convert_fields(input, String::from("test1"));
+
+        assert_eq!(ret, output);
+    }
+
+    #[test]
+    fn test_entrykey() {
+        // First use only the key
+        let mut input = std::collections::HashMap::new();
+        input.insert(String::from("key"), String::from("entry1"));
+
+        let output = biblatex::Entry::new(String::from("entry1"), biblatex::EntryType::Article);
+
+        let mut replacement_list = std::collections::HashMap::new();
+        replacement_list.insert(String::from("bibtexkey"), String::from("[[key]]"));
+
+        let converter = FieldConverter::new(&mut replacement_list);
+        let ret = converter.convert_fields(input, String::from("test1"));
+
+        assert_eq!(ret, output);
+
+        // Now, add a prefix
+        let mut input = std::collections::HashMap::new();
+        input.insert(String::from("key"), String::from("entry1"));
+
+        let output = biblatex::Entry::new(String::from("prefix_entry1"), biblatex::EntryType::Article);
+
+        let mut replacement_list = std::collections::HashMap::new();
+        replacement_list.insert(String::from("bibtexkey"), String::from("prefix_[[key]]"));
+
+        let converter = FieldConverter::new(&mut replacement_list);
+        let ret = converter.convert_fields(input, String::from("test1"));
 
         assert_eq!(ret, output);
     }
@@ -106,16 +173,16 @@ mod tests {
         input.insert(String::from("Start Page"), String::from("1200"));
         input.insert(String::from("ISBNs"), String::from("XXXXX-XXXXX"));
 
-        let mut output = std::collections::HashMap::new();
-        output.insert(String::from("pages"), String::from("1200"));
-        output.insert(String::from("isbn"), String::from("XXXXX-XXXXX"));
+        let mut output = biblatex::Entry::new(String::from("test1"), biblatex::EntryType::Article);
+        output.set("pages", vec![biblatex::Chunk::Normal(String::from("1200"))]);
+        output.set("isbn", vec![biblatex::Chunk::Normal(String::from("XXXXX-XXXXX"))]);
 
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert(String::from("pages"), String::from("[[Start Page]]"));
         replacement_list.insert(String::from("isbn"), String::from("[[ISBNs]]"));
 
         let converter = FieldConverter::new(&mut replacement_list).add_defaults();
-        let ret = converter.convert_fields(input);
+        let ret = converter.convert_fields(input, String::from("test1"));
 
         assert_eq!(ret, output);
     }
@@ -126,8 +193,8 @@ mod tests {
         input.insert(String::from("Start Page"), String::from("1200"));
         input.insert(String::from("End Page"), String::from("1212"));
 
-        let mut output = std::collections::HashMap::new();
-        output.insert(String::from("pages"), String::from("1200--1212"));
+        let mut output = biblatex::Entry::new(String::from("test1"), biblatex::EntryType::Article);
+        output.set("pages", vec![biblatex::Chunk::Normal(String::from("1200--1212"))]);
 
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert(
@@ -136,7 +203,7 @@ mod tests {
         );
 
         let converter = FieldConverter::new(&mut replacement_list).add_defaults();
-        let ret = converter.convert_fields(input);
+        let ret = converter.convert_fields(input, String::from("test1"));
 
         assert_eq!(ret, output);
     }
@@ -146,8 +213,8 @@ mod tests {
         let mut input = std::collections::HashMap::new();
         input.insert(String::from("Start Page"), String::from("1200"));
 
-        let mut output = std::collections::HashMap::new();
-        output.insert(String::from("pages"), String::from("1200--1200"));
+        let mut output = biblatex::Entry::new(String::from("test1"), biblatex::EntryType::Article);
+        output.set("pages", vec![biblatex::Chunk::Normal(String::from("1200--1200"))]);
 
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert(
@@ -156,7 +223,7 @@ mod tests {
         );
 
         let converter = FieldConverter::new(&mut replacement_list).add_defaults();
-        let ret = converter.convert_fields(input);
+        let ret = converter.convert_fields(input, String::from("test1"));
 
         assert_eq!(ret, output);
     }
