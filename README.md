@@ -11,24 +11,23 @@ mutluyuz
 
 
 USAGE:
-    csv2bibtex [FLAGS] [OPTIONS] <INPUT> <OUTPUT>
-
-FLAGS:
-        --biblatex       Print output in BibLaTeX mode (default)
-        --bibtex         Print output in BibTeX mode
-    -h, --help           Prints help information
-    -l, --lazy           Try to recover from as much errors as possible.
-        --no-defaults    Don't add default field mappings.
-    -V, --version        Prints version information
-
-OPTIONS:
-    -d, --delimiter <DELIMITER>       Delimiter between cells in CSV file
-    -f, --field-mapping <FIELD>...    Assignment of csv fields to bibtex fields
-    -v, --verbosity <LEVEL>           Verbosity level, either DEBUG, INFO, WARN, or ERROR
+    csv2bibtex [OPTIONS] <INPUT> <OUTPUT>
 
 ARGS:
     <INPUT>     Input file to use
     <OUTPUT>    Output file to use
+
+OPTIONS:
+        --biblatex                  Print output in BibLaTeX mode (default)
+        --bibtex                    Print output in BibTeX mode
+    -d, --delimiter <DELIMITER>     Delimiter between cells in CSV file
+    -f, --field-mapping <FIELD>     Assignment of csv fields to bibtex fields
+    -h, --help                      Print help information
+    -l, --lazy                      Try to recover from as much errors as possible.
+        --no-defaults               Don't add default field mappings and verbatim fields.
+    -v, --verbosity <LEVEL>         Verbosity level, either DEBUG, INFO, WARN, or ERROR
+    -V, --version                   Print version information
+        --verbatim-field <FIELD>    Bib(La)TeX verbatim fields, like url, file or doi
 ```
 
 Usage is really intuitive: `csv2bibtex INPUTFILE OUTPUTFILE`. CSV fields can be 
@@ -58,6 +57,11 @@ the type of the BibTeX entry, the latter the BibTeX key. They can be used like
 any other field (see above). In addition, there are some default field mappings 
 set (like `title=[[titles]]`, use `--no-defaults` to prevent this).
 The field mapping argument can be given multiple times to map multiple fields.
+
+The `--verbatim-field` argument can be used to not escape a certain field
+(e.g., `file`, `doi`, or `url`). This means that for example an url like
+"https://www.example.com/?1234%56" stays this way and is not changed to 
+"https://www.example.com/?1234\%56".
 
 
 ## Installation

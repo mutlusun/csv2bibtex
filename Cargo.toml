@@ -9,7 +9,7 @@ edition = "2021"
 [dependencies]
 csv = "^1.1"
 serde = "^1"
-biblatex = "^0.5"
+biblatex = "^0.6.1"
 regex = "^1.5"
 clap = { version = "^3.1", features = ["cargo"] }
 anyhow = "^1.0"

@@ -6,13 +6,16 @@ pub struct FieldConverter<'a> {
     // The regex to replace CSV fields with their corresponding entry. Saved here to compile the
     // regex only once.
     regex: regex::Regex,
+    // Fields that should stay as they are -- verbatim mode
+    verbatim_fields: &'a mut Vec<String>,
 }
 
 impl<'a> FieldConverter<'a> {
-    pub fn new(replacement_list: &'a mut std::collections::HashMap<String, String>) -> Self {
+    pub fn new(replacement_list: &'a mut std::collections::HashMap<String, String>, verbatim_fields: &'a mut Vec<String>) -> Self {
         Self {
             map: replacement_list,
             regex: regex::Regex::new("\\[\\[(.+?)\\]\\]").unwrap(),
+            verbatim_fields,
         }
     }
 
@@ -44,6 +47,14 @@ impl<'a> FieldConverter<'a> {
             .entry(String::from("number"))
             .or_insert_with(|| String::from("[[issue]]"));
 
+        // Insert into verbatim fields
+        let tmp_verbfields = ["url", "file", "doi", "pdf", "eprint", "verba", "verbb", "verbc", "urlraw"];
+        for item in tmp_verbfields {
+            if !self.verbatim_fields.contains(&String::from(item)) {
+                self.verbatim_fields.push(String::from(item));
+            }
+        }
+
         self
     }
 
@@ -70,6 +81,8 @@ impl<'a> FieldConverter<'a> {
 
         // Check whether we have a entry type specified in `self.map` and use this one or set a
         // default value.
+        //
+        // TODO that looks ugly!
         let entrytype: String = if let Some(x) = self.map.get("entrytype") {
             self.regex.replace_all(x, |caps: &regex::Captures| {
                 if let Some(y) = input.get(&caps[1]) {
@@ -105,8 +118,14 @@ impl<'a> FieldConverter<'a> {
                 }
             });
 
-            if !result.is_empty() {
-                ret.set(k, vec![biblatex::Chunk::Normal(result.into_owned())]);
+            if result.is_empty() {
+                continue
+            }
+
+            if self.verbatim_fields.contains(k) {
+                ret.set(k, vec![biblatex::Spanned::detached(biblatex::Chunk::Verbatim(result.into_owned()))]);
+            } else {
+                ret.set(k, vec![biblatex::Spanned::detached(biblatex::Chunk::Normal(result.into_owned()))]);
             }
         }
 
@@ -125,12 +144,13 @@ mod tests {
         input.insert(String::from("title"), String::from("My eloquent title"));
 
         let mut output = biblatex::Entry::new(String::from("test1"), biblatex::EntryType::Article);
-        output.set("author", vec![biblatex::Chunk::Normal(String::from("author1, author2"))]);
-        output.set("title", vec![biblatex::Chunk::Normal(String::from("My eloquent title"))]);
+        output.set("author", vec![biblatex::Spanned::detached(biblatex::Chunk::Normal(String::from("author1, author2")))]);
+        output.set("title", vec![biblatex::Spanned::detached(biblatex::Chunk::Normal(String::from("My eloquent title")))]);
 
         let mut replacement_list = std::collections::HashMap::new();
+        let mut verbatim_fields = std::vec::Vec::new();
 
-        let converter = FieldConverter::new(&mut replacement_list).add_defaults();
+        let converter = FieldConverter::new(&mut replacement_list, &mut verbatim_fields).add_defaults();
         let ret = converter.convert_fields(input, String::from("test1"));
 
         assert_eq!(ret, output);
@@ -146,8 +166,9 @@ mod tests {
 
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert(String::from("bibtexkey"), String::from("[[key]]"));
+        let mut verbatim_fields = std::vec::Vec::new();
 
-        let converter = FieldConverter::new(&mut replacement_list);
+        let converter = FieldConverter::new(&mut replacement_list, &mut verbatim_fields);
         let ret = converter.convert_fields(input, String::from("test1"));
 
         assert_eq!(ret, output);
@@ -160,8 +181,9 @@ mod tests {
 
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert(String::from("bibtexkey"), String::from("prefix_[[key]]"));
+        let mut verbatim_fields = std::vec::Vec::new();
 
-        let converter = FieldConverter::new(&mut replacement_list);
+        let converter = FieldConverter::new(&mut replacement_list, &mut verbatim_fields);
         let ret = converter.convert_fields(input, String::from("test1"));
 
         assert_eq!(ret, output);
@@ -174,14 +196,15 @@ mod tests {
         input.insert(String::from("ISBNs"), String::from("XXXXX-XXXXX"));
 
         let mut output = biblatex::Entry::new(String::from("test1"), biblatex::EntryType::Article);
-        output.set("pages", vec![biblatex::Chunk::Normal(String::from("1200"))]);
-        output.set("isbn", vec![biblatex::Chunk::Normal(String::from("XXXXX-XXXXX"))]);
+        output.set("pages", vec![biblatex::Spanned::detached(biblatex::Chunk::Normal(String::from("1200")))]);
+        output.set("isbn", vec![biblatex::Spanned::detached(biblatex::Chunk::Normal(String::from("XXXXX-XXXXX")))]);
 
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert(String::from("pages"), String::from("[[Start Page]]"));
         replacement_list.insert(String::from("isbn"), String::from("[[ISBNs]]"));
+        let mut verbatim_fields = std::vec::Vec::new();
 
-        let converter = FieldConverter::new(&mut replacement_list).add_defaults();
+        let converter = FieldConverter::new(&mut replacement_list, &mut verbatim_fields).add_defaults();
         let ret = converter.convert_fields(input, String::from("test1"));
 
         assert_eq!(ret, output);
@@ -194,15 +217,16 @@ mod tests {
         input.insert(String::from("End Page"), String::from("1212"));
 
         let mut output = biblatex::Entry::new(String::from("test1"), biblatex::EntryType::Article);
-        output.set("pages", vec![biblatex::Chunk::Normal(String::from("1200--1212"))]);
+        output.set("pages", vec![biblatex::Spanned::detached(biblatex::Chunk::Normal(String::from("1200--1212")))]);
 
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert(
             String::from("pages"),
             String::from("[[Start Page]]--[[End Page]]"),
         );
+        let mut verbatim_fields = std::vec::Vec::new();
 
-        let converter = FieldConverter::new(&mut replacement_list).add_defaults();
+        let converter = FieldConverter::new(&mut replacement_list, &mut verbatim_fields).add_defaults();
         let ret = converter.convert_fields(input, String::from("test1"));
 
         assert_eq!(ret, output);
@@ -214,17 +238,49 @@ mod tests {
         input.insert(String::from("Start Page"), String::from("1200"));
 
         let mut output = biblatex::Entry::new(String::from("test1"), biblatex::EntryType::Article);
-        output.set("pages", vec![biblatex::Chunk::Normal(String::from("1200--1200"))]);
+        output.set("pages", vec![biblatex::Spanned::detached(biblatex::Chunk::Normal(String::from("1200--1200")))]);
 
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert(
             String::from("pages"),
             String::from("[[Start Page]]--[[Start Page]]"),
         );
+        let mut verbatim_fields = std::vec::Vec::new();
 
-        let converter = FieldConverter::new(&mut replacement_list).add_defaults();
+        let converter = FieldConverter::new(&mut replacement_list, &mut verbatim_fields).add_defaults();
         let ret = converter.convert_fields(input, String::from("test1"));
 
         assert_eq!(ret, output);
+    }
+
+    #[test]
+    fn test_verbatim_fields() {
+        let mut input = std::collections::HashMap::new();
+        input.insert(String::from("author"), String::from("author1, author2"));
+        input.insert(String::from("title"), String::from("My eloquent title"));
+        input.insert(String::from("testfield"), String::from("Test: 1234$%?_]';p[\\]"));
+        input.insert(String::from("type"), String::from("misc"));
+
+        let mut output = biblatex::Entry::new(String::from("test1"), biblatex::EntryType::Misc);
+        output.set("author", vec![biblatex::Spanned::detached(biblatex::Chunk::Normal(String::from("author1, author2")))]);
+        output.set("title", vec![biblatex::Spanned::detached(biblatex::Chunk::Normal(String::from("My eloquent title")))]);
+        output.set("testfield", vec![biblatex::Spanned::detached(biblatex::Chunk::Verbatim(String::from("Test: 1234$%?_]';p[\\]")))]);
+
+        let mut replacement_list = std::collections::HashMap::new();
+        replacement_list.insert(
+            String::from("testfield"),
+            String::from("[[testfield]]"),
+        );
+        let mut verbatim_fields = std::vec::Vec::new();
+        verbatim_fields.push(String::from("testfield"));
+
+        let converter = FieldConverter::new(&mut replacement_list, &mut verbatim_fields).add_defaults();
+        let ret = converter.convert_fields(input, String::from("test1"));
+
+        assert_eq!(ret, output);
+
+        // Test output of a verbatim field
+        let tmp = String::from("@misc{test1,\nauthor = {author1, author2},\ntestfield = {{Test\\: 1234\\$\\%?\\_]';p[\\\\]}},\ntitle = {My eloquent title},\n}");
+        assert_eq!(ret.to_biblatex_string(), tmp);
     }
 }

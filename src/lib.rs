@@ -23,10 +23,13 @@ pub fn run(config: &args::Config) -> Result<(), anyhow::Error> {
     );
 
     // create new csvparser, converter, and writer
+    //
+    // TODO cloning here makes absolutely no sense!
     let mut csv_field_mapping = config.csv_field_mapping.clone();
+    let mut verbatim_fields = config.verbatim_fields.clone();
     let reader = csvreader::Reader::new(&file_input, &config.csv_delimiter, config.csv_lazy);
     let converter = {
-        let mut ret = converter::FieldConverter::new(&mut csv_field_mapping);
+        let mut ret = converter::FieldConverter::new(&mut csv_field_mapping, &mut verbatim_fields);
         if config.mapping_defaults {
             ret = ret.add_defaults()
         }

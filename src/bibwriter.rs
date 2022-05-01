@@ -1,4 +1,5 @@
 use anyhow::Context;
+use anyhow::anyhow;
 
 /// BibWriter Trait
 pub trait BibWrite {
@@ -45,7 +46,7 @@ impl<W: std::io::Write> BibtexWriter<W> {
 
 impl<W: std::io::Write> BibWrite for BibtexWriter<W> {
     fn write(&mut self, entry: &biblatex::Entry) -> Result<(), anyhow::Error> {
-        write!(self.writer, "{}\n\n", entry.to_bibtex_string())
+        write!(self.writer, "{}\n\n", entry.to_bibtex_string().map_err(|e| anyhow!("TypeError: {}", e))?)
             .context("Could not write entry to file")?;
         self.counter += 1;
 

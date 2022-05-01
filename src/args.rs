@@ -29,6 +29,7 @@ pub struct Config {
     pub log_level: log::LevelFilter,
     pub output_type: OutputType,
     pub mapping_defaults: bool,
+    pub verbatim_fields: Vec<String>,
 }
 
 impl Default for Config {
@@ -42,6 +43,7 @@ impl Default for Config {
             log_level: log::LevelFilter::Info,
             output_type: OutputType::default(),
             mapping_defaults: true,
+            verbatim_fields: std::vec::Vec::new(),
         }
     }
 }
@@ -111,7 +113,7 @@ impl Config {
             )
             .arg(
                 clap::Arg::new("no-defaults")
-                    .help("Don't add default field mappings.")
+                    .help("Don't add default field mappings and verbatim fields.")
                     .long("no-defaults")
                     .takes_value(false),
             )
@@ -120,6 +122,15 @@ impl Config {
                     .help("Assignment of csv fields to bibtex fields")
                     .long("field-mapping")
                     .short('f')
+                    .takes_value(true)
+                    .multiple_occurrences(true)
+                    .number_of_values(1)
+                    .value_name("FIELD"),
+            )
+            .arg(
+                clap::Arg::new("verbatim-field")
+                    .help("Bib(La)TeX verbatim fields, like url, file or doi")
+                    .long("verbatim-field")
                     .takes_value(true)
                     .multiple_occurrences(true)
                     .number_of_values(1)
@@ -149,6 +160,12 @@ impl Config {
                 let result: Vec<&str> = field.split('=').collect();
                 ret.csv_field_mapping
                     .insert(String::from(result[0]), String::from(result[1]));
+            }
+        }
+
+        if let Some(x) = matches.values_of("verbatim-field") {
+            for field in x {
+                ret.verbatim_fields.push(field.to_string());
             }
         }
 
