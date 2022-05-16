@@ -340,8 +340,7 @@ mod tests {
 
         let mut replacement_list = std::collections::HashMap::new();
         replacement_list.insert(String::from("testfield"), String::from("[[testfield]]"));
-        let mut verbatim_fields = std::vec::Vec::new();
-        verbatim_fields.push(String::from("testfield"));
+        let mut verbatim_fields = vec![String::from("testfield")];
 
         let converter =
             FieldConverter::new(&mut replacement_list, &mut verbatim_fields).add_defaults();

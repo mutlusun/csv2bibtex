@@ -5,16 +5,18 @@ fn run_main_loop(config: &mut csv2bibtex::args::Config) {
     let mut config = config.clone();
 
     // run main function
-    csv2bibtex::run(&mut config).unwrap();
+    csv2bibtex::run(&config).unwrap();
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
     // build config structure
-    let mut config = csv2bibtex::args::Config::default();
-    config.file_input = std::path::PathBuf::from("./benches/benchmark1-input1.csv");
-    config.file_output = std::path::PathBuf::from("./benches/tmp-benchmark1-output1.bib");
-    config.csv_delimiter = String::from("\t");
-    config.csv_lazy = true;
+    let mut config = csv2bibtex::args::Config {
+        file_input: std::path::PathBuf::from("./benches/benchmark1-input1.csv"),
+        file_output: std::path::PathBuf::from("./benches/tmp-benchmark1-output1.bib"),
+        csv_delimiter: String::from("\t"),
+        csv_lazy: true,
+        ..Default::default()
+    };
 
     // benchmark runs (100 lines, 0 fields)
     c.bench_function("0 fields, 100 lines", |b| {

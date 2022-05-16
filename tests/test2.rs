@@ -3,30 +3,33 @@
 
 #[cfg(test)]
 mod test_input2 {
-    use csv2bibtex::args;
     use log::error;
 
     #[test]
     #[should_panic]
     fn fail_because_of_different_length() {
         // build config structure
-        let mut config = args::Config::default();
-        config.file_input = std::path::PathBuf::from("./tests/test2-input1.csv");
-        config.file_output = std::path::PathBuf::from("./tests/tmp-test2-output1.bib");
-        config.csv_delimiter = String::from("\t");
+        let config = csv2bibtex::args::Config {
+            file_input: std::path::PathBuf::from("./tests/test2-input1.csv"),
+            file_output: std::path::PathBuf::from("./tests/tmp-test2-output1.bib"),
+            csv_delimiter: String::from("\t"),
+            ..Default::default()
+        };
 
         // run main function
-        csv2bibtex::run(&mut config).unwrap();
+        csv2bibtex::run(&config).unwrap();
     }
 
     #[test]
     fn should_work() {
         // build config structure
-        let mut config = args::Config::default();
-        config.file_input = std::path::PathBuf::from("./tests/test2-input1.csv");
-        config.file_output = std::path::PathBuf::from("./tests/tmp-test2-output1.bib");
-        config.csv_delimiter = String::from("\t");
-        config.csv_lazy = true;
+        let mut config = csv2bibtex::args::Config {
+            file_input: std::path::PathBuf::from("./tests/test2-input1.csv"),
+            file_output: std::path::PathBuf::from("./tests/tmp-test2-output1.bib"),
+            csv_delimiter: String::from("\t"),
+            csv_lazy: true,
+            ..Default::default()
+        };
 
         // build field hash map
         config
@@ -40,7 +43,7 @@ mod test_input2 {
             .insert(String::from("title"), String::from("[[TI]]"));
 
         // run main function
-        if let Err(e) = csv2bibtex::run(&mut config) {
+        if let Err(e) = csv2bibtex::run(&config) {
             error!("{:#}.", e);
             std::process::exit(1);
         }
@@ -54,7 +57,7 @@ mod test_input2 {
             &std::fs::read_to_string("./tests/tmp-test2-output1.bib").unwrap(),
         )
         .unwrap();
-        assert_eq!(left.iter().eq(right.iter()), true);
+        assert!(left.iter().eq(right.iter()));
 
         // clean up
         std::fs::remove_file("./tests/tmp-test2-output1.bib").unwrap();

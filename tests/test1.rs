@@ -1,17 +1,18 @@
 #[cfg(test)]
 mod test_input1 {
-    use csv2bibtex::args;
     use log::error;
 
     #[test]
     fn only_with_defaults() {
         // build config structure
-        let mut config = args::Config::default();
-        config.file_input = std::path::PathBuf::from("./tests/test1-input1.csv");
-        config.file_output = std::path::PathBuf::from("./tests/tmp-test1-output1.bib");
+        let config = csv2bibtex::args::Config {
+            file_input: std::path::PathBuf::from("./tests/test1-input1.csv"),
+            file_output: std::path::PathBuf::from("./tests/tmp-test1-output1.bib"),
+            ..Default::default()
+        };
 
         // run main function
-        if let Err(e) = csv2bibtex::run(&mut config) {
+        if let Err(e) = csv2bibtex::run(&config) {
             error!("{:#}.", e);
             std::process::exit(1);
         }
@@ -25,7 +26,7 @@ mod test_input1 {
             &std::fs::read_to_string("./tests/tmp-test1-output1.bib").unwrap(),
         )
         .unwrap();
-        assert_eq!(left.iter().eq(right.iter()), true);
+        assert!(left.iter().eq(right.iter()));
 
         // clean up
         std::fs::remove_file("./tests/tmp-test1-output1.bib").unwrap();
@@ -34,9 +35,11 @@ mod test_input1 {
     #[test]
     fn with_custom_fields() {
         // build config structure
-        let mut config = args::Config::default();
-        config.file_input = std::path::PathBuf::from("./tests/test1-input1.csv");
-        config.file_output = std::path::PathBuf::from("./tests/tmp-test1-output2.bib");
+        let mut config = csv2bibtex::args::Config {
+            file_input: std::path::PathBuf::from("./tests/test1-input1.csv"),
+            file_output: std::path::PathBuf::from("./tests/tmp-test1-output2.bib"),
+            ..Default::default()
+        };
 
         // build field hash map
         config
@@ -80,7 +83,7 @@ mod test_input1 {
         );
 
         // run main function
-        if let Err(e) = csv2bibtex::run(&mut config) {
+        if let Err(e) = csv2bibtex::run(&config) {
             error!("{:#}.", e);
             std::process::exit(1);
         }
@@ -94,7 +97,7 @@ mod test_input1 {
             &std::fs::read_to_string("./tests/tmp-test1-output2.bib").unwrap(),
         )
         .unwrap();
-        assert_eq!(left.iter().eq(right.iter()), true);
+        assert!(left.iter().eq(right.iter()));
 
         // clean up
         std::fs::remove_file("./tests/tmp-test1-output2.bib").unwrap();

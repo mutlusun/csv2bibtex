@@ -2,17 +2,18 @@
 
 #[cfg(test)]
 mod test_input3 {
-    use csv2bibtex::args;
     use log::error;
 
     #[test]
     fn test_verbatim_fields() {
         // build config structure
-        let mut config = args::Config::default();
-        config.file_input = std::path::PathBuf::from("./tests/test3-input1.csv");
-        config.file_output = std::path::PathBuf::from("./tests/tmp-test3-output1.bib");
-        config.csv_delimiter = String::from(";");
-        config.csv_lazy = true;
+        let mut config = csv2bibtex::args::Config {
+            file_input: std::path::PathBuf::from("./tests/test3-input1.csv"),
+            file_output: std::path::PathBuf::from("./tests/tmp-test3-output1.bib"),
+            csv_delimiter: String::from(";"),
+            csv_lazy: true,
+            ..Default::default()
+        };
 
         // build field hash map
         config
@@ -29,7 +30,7 @@ mod test_input3 {
             .insert(String::from("url"), String::from("[[DI]]"));
 
         // run main function
-        if let Err(e) = csv2bibtex::run(&mut config) {
+        if let Err(e) = csv2bibtex::run(&config) {
             error!("{:#}.", e);
             std::process::exit(1);
         }
@@ -43,7 +44,7 @@ mod test_input3 {
             &std::fs::read_to_string("./tests/tmp-test3-output1.bib").unwrap(),
         )
         .unwrap();
-        assert_eq!(left.iter().eq(right.iter()), true);
+        assert!(left.iter().eq(right.iter()));
 
         // clean up
         std::fs::remove_file("./tests/tmp-test3-output1.bib").unwrap();
