@@ -61,7 +61,7 @@ The field mapping argument can be given multiple times to map multiple fields.
 The `--verbatim-field` argument can be used to not escape a certain field
 (e.g., `file`, `doi`, or `url`). This means that for example an url like
 "https://www.example.com/?1234%56" stays this way and is not changed to 
-"https://www.example.com/?1234\%56".
+"https://www.example.com/?1234\\%56".
 
 
 ## Installation
