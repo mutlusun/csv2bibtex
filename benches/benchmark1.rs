@@ -1,11 +1,8 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
-fn run_main_loop(config: &mut csv2bibtex::args::Config) {
-    // that's strange, does not work by reference
-    let mut config = config.clone();
-
+fn run_main_loop(config: &csv2bibtex::args::Config) {
     // run main function
-    csv2bibtex::run(&config).unwrap();
+    csv2bibtex::run(config).unwrap();
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
@@ -20,7 +17,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     // benchmark runs (100 lines, 0 fields)
     c.bench_function("0 fields, 100 lines", |b| {
-        b.iter(|| run_main_loop(black_box(&mut config)))
+        b.iter(|| run_main_loop(black_box(&config)))
     });
 
     // add five fields and run again
@@ -40,7 +37,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         .csv_field_mapping
         .insert(String::from("volume"), String::from("[[VL]]"));
     c.bench_function("5 valid fields, 100 lines", |b| {
-        b.iter(|| run_main_loop(black_box(&mut config)))
+        b.iter(|| run_main_loop(black_box(&config)))
     });
 
     // add five fields and run again
@@ -60,7 +57,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         .csv_field_mapping
         .insert(String::from("abstract"), String::from("[[AB]]"));
     c.bench_function("10 valid fields, 100 lines", |b| {
-        b.iter(|| run_main_loop(black_box(&mut config)))
+        b.iter(|| run_main_loop(black_box(&config)))
     });
 
     // clear fields, add five invalid fields and run again
@@ -81,7 +78,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         .csv_field_mapping
         .insert(String::from("volume"), String::from("[[volumes]]"));
     c.bench_function("5 invalid fields, 100 lines", |b| {
-        b.iter(|| run_main_loop(black_box(&mut config)))
+        b.iter(|| run_main_loop(black_box(&config)))
     });
 
     // add five invalid fields and run again
@@ -101,14 +98,14 @@ fn criterion_benchmark(c: &mut Criterion) {
         .csv_field_mapping
         .insert(String::from("abstract"), String::from("[[abstracts]]"));
     c.bench_function("10 invalid fields, 100 lines", |b| {
-        b.iter(|| run_main_loop(black_box(&mut config)))
+        b.iter(|| run_main_loop(black_box(&config)))
     });
 
     // switch to 1000 lines input file, clear fields, run again
     config.file_input = std::path::PathBuf::from("./benches/benchmark1-input2.csv");
     config.csv_field_mapping.clear();
     c.bench_function("0 fields, 1000 lines", |b| {
-        b.iter(|| run_main_loop(black_box(&mut config)))
+        b.iter(|| run_main_loop(black_box(&config)))
     });
 
     // add five fields and run again
@@ -128,7 +125,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         .csv_field_mapping
         .insert(String::from("volume"), String::from("[[VL]]"));
     c.bench_function("5 valid fields, 1000 lines", |b| {
-        b.iter(|| run_main_loop(black_box(&mut config)))
+        b.iter(|| run_main_loop(black_box(&config)))
     });
 
     // add five fields and run again
@@ -148,7 +145,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         .csv_field_mapping
         .insert(String::from("abstract"), String::from("[[AB]]"));
     c.bench_function("10 valid fields, 1000 lines", |b| {
-        b.iter(|| run_main_loop(black_box(&mut config)))
+        b.iter(|| run_main_loop(black_box(&config)))
     });
 
     // clear fields, add five invalid fields and run again
@@ -169,7 +166,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         .csv_field_mapping
         .insert(String::from("volume"), String::from("[[volumes]]"));
     c.bench_function("5 invalid fields, 1000 lines", |b| {
-        b.iter(|| run_main_loop(black_box(&mut config)))
+        b.iter(|| run_main_loop(black_box(&config)))
     });
 
     // add five invalid fields and run again
@@ -189,7 +186,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         .csv_field_mapping
         .insert(String::from("abstract"), String::from("[[abstracts]]"));
     c.bench_function("10 invalid fields, 1000 lines", |b| {
-        b.iter(|| run_main_loop(black_box(&mut config)))
+        b.iter(|| run_main_loop(black_box(&config)))
     });
 
     // clean up
